@@ -31,7 +31,8 @@
         .profit-card .value { color: white; }
         
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; border-bottom: 2px solid #e5e7eb; padding-bottom: 5px; }
-        .tab-btn { padding: 10px 20px; background: transparent; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; }
+        .tab-btn { padding: 10px 20px; background: transparent; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.3s; }
+        .tab-btn:hover { background: #e5e7eb; }
         .tab-btn.active { background: #1a73e8; color: white; }
         
         .tab-content { display: none; }
@@ -43,17 +44,22 @@
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #333; }
         .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #1a73e8; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         
-        .table-responsive { overflow-x: auto; }
+        .table-responsive { overflow-x: auto; margin-top: 15px; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background: #f5f5f5; font-weight: bold; color: #333; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background: #f8f9fa; font-weight: bold; color: #333; }
+        tr:hover { background: #f8f9fa; }
         
         .btn-primary { background: #1a73e8; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+        .btn-primary:hover { background: #1557b0; }
         .btn-danger { background: #dc2626; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .btn-danger:hover { background: #b91c1c; }
         .btn-warning { background: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
-        .btn-success { background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+        .btn-warning:hover { background: #d97706; }
+        .btn-success { background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
         
         .low-stock { color: #f59e0b; font-weight: bold; }
         .success { background: #d1fae5; color: #065f46; padding: 12px; border-radius: 8px; margin-bottom: 15px; display: none; }
@@ -115,7 +121,7 @@
                 <button class="tab-btn admin-only" onclick="showTab('users')">👤 Wafanyakazi</button>
             </div>
 
-            <!-- Products Tab -->
+            <!-- Products Tab (Same as before - working well) -->
             <div id="productsTab" class="tab-content active">
                 <div class="card">
                     <h3>➕ Ongeza Bidhaa</h3>
@@ -235,30 +241,46 @@
                 </div>
             </div>
 
-            <!-- Users Tab (Admin only) -->
+            <!-- Users Tab (Admin only) - WELL ORGANIZED -->
             <div id="usersTab" class="tab-content admin-only">
                 <div class="card">
                     <h3>➕ Ongeza Mfanyakazi</h3>
                     <div id="userSuccess" class="success"></div>
                     <div class="form-row">
-                        <div class="form-group"><label>Jina Kamili</label><input type="text" id="userFullName" placeholder="Kwa mfano: John Doe"></div>
-                        <div class="form-group"><label>Barua pepe (Email)</label><input type="email" id="userEmail" placeholder="john@example.com"></div>
+                        <div class="form-group">
+                            <label>Jina Kamili</label>
+                            <input type="text" id="userFullName" placeholder="Kwa mfano: John Doe">
+                        </div>
+                        <div class="form-group">
+                            <label>Barua pepe (Email)</label>
+                            <input type="email" id="userEmail" placeholder="john@example.com">
+                        </div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group"><label>Namba ya Simu</label><input type="tel" id="userPhone" placeholder="07XXXXXXXX"></div>
-                        <div class="form-group"><label>Nafasi (Role)</label>
+                        <div class="form-group">
+                            <label>Namba ya Simu</label>
+                            <input type="tel" id="userPhone" placeholder="07XXXXXXXX">
+                        </div>
+                        <div class="form-group">
+                            <label>Nafasi (Role)</label>
                             <select id="userRoleSelect">
                                 <option value="cashier">👤 Cashier (Muuzaji)</option>
                                 <option value="admin">👑 Admin (Msimamizi)</option>
                             </select>
                         </div>
                     </div>
-                    <div class="form-group"><label>Nenosiri (Password)</label><input type="password" id="userPassword" placeholder="Nenosiri la mfanyakazi"></div>
+                    <div class="form-group">
+                        <label>Nenosiri (Password)</label>
+                        <input type="password" id="userPassword" placeholder="Nenosiri la mfanyakazi">
+                    </div>
                     <button onclick="createUser()" class="btn-primary">Ongeza Mfanyakazi</button>
                 </div>
+                
                 <div class="card">
                     <h3>📋 Orodha ya Wafanyakazi</h3>
-                    <div class="table-responsive"><div id="usersList"></div></div>
+                    <div class="table-responsive">
+                        <div id="usersList"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -798,37 +820,62 @@
             `;
         }
 
-        // User Management Functions
+        // ============ USER MANAGEMENT - WELL ORGANIZED ============
         function loadUsers() {
             if (currentUser?.role !== 'admin') return;
             const container = document.getElementById('usersList');
             const otherUsers = users.filter(u => u.email !== 'malabamalaba26@gmail.com');
             
             if (otherUsers.length === 0) {
-                container.innerHTML = '<p>Hakuna wafanyakazi wengine. Ongeza mfanyakazi kwanza.</p>';
+                container.innerHTML = '<p style="text-align: center; padding: 20px;">Hakuna wafanyakazi wengine. Ongeza mfanyakazi kwanza.</p>';
                 return;
             }
             
-            let html = '<table><thead><tr><th>Jina</th><th>Email</th><th>Simu</th><th>Nafasi</th><th>Kitendo</th></tr></thead><tbody>';
-            otherUsers.forEach((u, idx) => {
-                html += `<tr>
-                    <td><strong>${u.name}</strong></td>
-                    <td>${u.email}</td>
-                    <td>${u.phone || '-'}</td>
-                    <td>${u.role === 'admin' ? '👑 Admin' : '👤 Cashier'}</td>
-                    <td><button onclick="deleteUserByEmail('${u.email}')" class="btn-danger">🗑️ Futa</button></td>
-                </tr>`;
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Jina Kamili</th>
+                            <th>Barua pepe (Email)</th>
+                            <th>Namba ya Simu</th>
+                            <th>Nafasi (Role)</th>
+                            <th>Kitendo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            otherUsers.forEach((u) => {
+                html += `
+                    <tr>
+                        <td><strong>${escapeHtml(u.name)}</strong></td>
+                        <td>${escapeHtml(u.email)}</td>
+                        <td>${u.phone || '-'}</td>
+                        <td>${u.role === 'admin' ? '👑 Admin (Msimamizi)' : '👤 Cashier (Muuzaji)'}</td>
+                        <td><button onclick="deleteUserByEmail('${escapeHtml(u.email)}')" class="btn-danger">🗑️ Futa</button></td>
+                    </tr>
+                `;
             });
-            html += '</tbody></tr>';
+            
+            html += `
+                    </tbody>
+                </table>
+            `;
             container.innerHTML = html;
         }
 
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         function deleteUserByEmail(email) {
-            if (confirm('Futa mfanyakazi huyu?')) {
+            if (confirm('Je, una uhakika unataka kufuta mfanyakazi huyu?')) {
                 users = users.filter(u => u.email !== email);
                 saveData();
                 loadUsers();
-                showSuccess('userSuccess', '✅ Mfanyakazi amefutwa!');
+                showSuccess('userSuccess', '✅ Mfanyakazi amefutwa kikamilifu!');
             }
         }
 
@@ -844,46 +891,61 @@
             const role = document.getElementById('userRoleSelect').value;
             const password = document.getElementById('userPassword').value;
             
+            // Validation
             if (!name) {
-                alert('Tafadhali jaza jina la mfanyakazi');
+                alert('❌ Tafadhali jaza jina la mfanyakazi');
+                document.getElementById('userFullName').focus();
                 return;
             }
             if (!email) {
-                alert('Tafadhali jaza barua pepe (email)');
+                alert('❌ Tafadhali jaza barua pepe (email) ya mfanyakazi');
+                document.getElementById('userEmail').focus();
                 return;
             }
             if (!password) {
-                alert('Tafadhali jaza nenosiri (password)');
+                alert('❌ Tafadhali jaza nenosiri (password) la mfanyakazi');
+                document.getElementById('userPassword').focus();
                 return;
             }
             if (password.length < 4) {
-                alert('Nenosiri lazima iwe na herufi 4 au zaidi');
+                alert('❌ Nenosiri lazima iwe na herufi 4 au zaidi');
+                document.getElementById('userPassword').focus();
                 return;
             }
             
+            // Check if email already exists
             if (users.find(u => u.email === email)) {
-                alert(`Email "${email}" tayari ipo! Tumia email tofauti.`);
+                alert(`❌ Email "${email}" tayari ipo! Tumia email tofauti.`);
+                document.getElementById('userEmail').focus();
                 return;
             }
             
-            users.push({
+            // Add new user
+            const newUser = {
                 id: Date.now(),
                 name: name,
                 email: email,
-                phone: phone,
+                phone: phone || '',
                 role: role,
                 password: password
-            });
+            };
+            users.push(newUser);
             saveData();
             
+            // Show success message
             showSuccess('userSuccess', `✅ Mfanyakazi ${name} ameongezwa kikamilifu!`);
             
+            // Clear form
             document.getElementById('userFullName').value = '';
             document.getElementById('userEmail').value = '';
             document.getElementById('userPhone').value = '';
             document.getElementById('userPassword').value = '';
             
+            // Refresh user list
             loadUsers();
+            
+            // Optional: Show success in console
+            console.log(`New user created: ${name} (${email}) - Role: ${role}`);
         }
 
         function showReceipt(sale) {

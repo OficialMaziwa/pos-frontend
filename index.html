@@ -250,7 +250,7 @@
                 </div>
             </div>
 
-            <!-- Users Tab (Admin only) - HII NDIYO ITAONESHA FORM NA TABLE ZA WAFANYAKAZI -->
+            <!-- Users Tab (Admin only) -->
             <div id="usersTab" class="tab-content admin-only">
                 <div class="card">
                     <h3>➕ Ongeza Mfanyakazi</h3>
@@ -325,6 +325,21 @@
             saveData();
         }
 
+        // Check if user was previously logged in (from localStorage)
+        function checkSavedSession() {
+            const savedUserEmail = localStorage.getItem('currentUserEmail');
+            if (savedUserEmail) {
+                const user = users.find(u => u.email === savedUserEmail);
+                if (user) {
+                    currentUser = user;
+                    return true;
+                } else {
+                    localStorage.removeItem('currentUserEmail');
+                }
+            }
+            return false;
+        }
+
         function login() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
@@ -332,6 +347,9 @@
             
             if (user) {
                 currentUser = user;
+                // Save user session to localStorage
+                localStorage.setItem('currentUserEmail', user.email);
+                
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
                 document.getElementById('userName').innerHTML = user.name;
@@ -339,8 +357,14 @@
                 
                 if (user.role !== 'admin') {
                     document.querySelectorAll('.admin-only').forEach(tab => tab.style.display = 'none');
+                    document.querySelectorAll('.admin-only').forEach(btn => {
+                        if(btn.classList && btn.classList.contains('tab-btn')) btn.style.display = 'none';
+                    });
                 } else {
-                    document.querySelectorAll('.admin-only').forEach(tab => tab.style.display = 'inline-block');
+                    document.querySelectorAll('.admin-only').forEach(tab => tab.style.display = 'block');
+                    document.querySelectorAll('.admin-only').forEach(btn => {
+                        if(btn.classList && btn.classList.contains('tab-btn')) btn.style.display = 'inline-block';
+                    });
                     loadUsers();
                 }
                 
@@ -361,6 +385,8 @@
 
         function logout() {
             currentUser = null;
+            // Clear saved session
+            localStorage.removeItem('currentUserEmail');
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('dashboard').style.display = 'none';
             document.getElementById('email').value = 'malabamalaba26@gmail.com';
@@ -474,9 +500,9 @@
                 container.innerHTML = '<p>Hakuna bidhaa. Ongeza bidhaa kwanza.</p>';
                 return;
             }
-            let html = '<table><thead><tr>';
+            let html = '<tr><thead><tr>';
             html += '<th>Jina</th><th>SKU</th><th>Category</th><th>Bei ya Kununulia</th><th>Bei ya Kuuza</th><th>Stock</th><th>Faida/Unit</th><th>Kitendo</th>';
-            html += '</tr></thead><tbody>';
+            html += '</thead><tbody>';
             
             filtered.forEach(p => {
                 const isLow = p.stock <= p.alertLevel;
@@ -531,7 +557,7 @@
                 container.innerHTML = '<p>Hakuna wateja. Ongeza mteja kwanza.</p>';
                 return;
             }
-            let html = '<td><thead><tr><th>Jina</th><th>Simu</th><th>Email</th><th>Anwani</th><th>Kitendo</th></tr></thead><tbody>';
+            let html = '<table><thead><tr><th>Jina</th><th>Simu</th><th>Email</th><th>Anwani</th><th>Kitendo</th></tr></thead><tbody>';
             customers.forEach((c, idx) => {
                 html += `<tr>
                     <td><strong>${c.name}</strong></td>
@@ -967,7 +993,7 @@
                         <tfoot><tr style="border-top:1px solid #000;">
                             <td colspan="3"><strong>JUMLA:</strong></td>
                             <td style="text-align:right;"><strong>TZS ${sale.total.toLocaleString()}</strong></td>
-                        </tr></tfoot>
+                         </tr></tfoot>
                     </table>
                     <hr>
                     <p><strong>Njia ya Malipo:</strong> ${sale.payment?.toUpperCase()}</p>
@@ -1005,16 +1031,11 @@
         }
 
         function showTab(tab) {
-            // Hide all tab contents
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            // Remove active class from all buttons
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            // Show selected tab content
             document.getElementById(`${tab}Tab`).classList.add('active');
-            // Add active class to clicked button
             event.target.classList.add('active');
             
-            // Load data based on selected tab
             if (tab === 'stock') { 
                 checkLowStock(); 
                 loadStockSummary(); 
@@ -1033,14 +1054,39 @@
             }
         }
 
-        // Initialize
-        loadCategories();
-        displayProducts();
-        displayCustomers();
-        loadDashboard();
-        checkLowStock();
-        loadStockSummary();
-        if (currentUser?.role === 'admin') loadUsers();
+        // ============ INITIALIZATION ============
+        // First check if user has saved session
+        if (checkSavedSession()) {
+            // User was logged in, show dashboard
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            document.getElementById('userName').innerHTML = currentUser.name;
+            document.getElementById('userRole').innerHTML = currentUser.role === 'admin' ? '👑 Admin' : '👤 Cashier';
+            
+            if (currentUser.role !== 'admin') {
+                document.querySelectorAll('.admin-only').forEach(tab => tab.style.display = 'none');
+                document.querySelectorAll('.admin-only').forEach(btn => {
+                    if(btn.classList && btn.classList.contains('tab-btn')) btn.style.display = 'none';
+                });
+            } else {
+                document.querySelectorAll('.admin-only').forEach(tab => tab.style.display = 'block');
+                document.querySelectorAll('.admin-only').forEach(btn => {
+                    if(btn.classList && btn.classList.contains('tab-btn')) btn.style.display = 'inline-block';
+                });
+                loadUsers();
+            }
+            
+            loadDashboard();
+            loadCategories();
+            displayProducts();
+            displayCustomers();
+            checkLowStock();
+            loadStockSummary();
+        } else {
+            // Show login screen
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('dashboard').style.display = 'none';
+        }
     </script>
 </body>
 </html>

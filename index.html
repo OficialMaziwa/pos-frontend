@@ -200,7 +200,7 @@
                 </div>
             </div>
 
-            <!-- Sales Tab - HAKUNA FORM YA WAFANYAKAZI HAPA -->
+            <!-- Sales Tab -->
             <div id="salesTab" class="tab-content">
                 <div class="card">
                     <h3>🛒 Rekodi Mauzo</h3>
@@ -233,7 +233,7 @@
                 </div>
             </div>
 
-            <!-- Stock Tab - HAKUNA FORM YA WAFANYAKAZI HAPA -->
+            <!-- Stock Tab -->
             <div id="stockTab" class="tab-content">
                 <div class="card">
                     <h3>⚠️ Bidhaa Zinazoisha (Low Stock Alert)</h3>
@@ -258,7 +258,7 @@
                 </div>
             </div>
 
-            <!-- Users Tab (Admin only) - FORM NA ORODHA YA WAFANYAKAZI IPO HAPA TU -->
+            <!-- Users Tab (Admin only) - FORM NA ORODHA YA WAFANYAKAZI IPO HAPA TU, HAIRUDIWI -->
             <div id="usersTab" class="tab-content admin-only">
                 <div class="card">
                     <h3>➕ Ongeza Mfanyakazi</h3>
@@ -302,7 +302,6 @@
     </div>
 
     <script>
-        // Data variables
         let products = JSON.parse(localStorage.getItem('products')) || [];
         let categories = JSON.parse(localStorage.getItem('categories')) || ['Vyakula', 'Dawa', 'Nguo', 'Vifaa', 'Vinywaji', 'Vipodozi', 'Electronics'];
         let customers = JSON.parse(localStorage.getItem('customers')) || [];
@@ -321,14 +320,7 @@
         }
 
         if (users.length === 0) {
-            users.push({
-                id: Date.now(),
-                name: 'Malaba Maziwa',
-                email: 'malabamalaba26@gmail.com',
-                phone: '0763387403',
-                role: 'admin',
-                password: 'Malaba@03'
-            });
+            users.push({ id: Date.now(), name: 'Malaba Maziwa', email: 'malabamalaba26@gmail.com', phone: '0763387403', role: 'admin', password: 'Malaba@03' });
             saveData();
         }
 
@@ -336,12 +328,8 @@
             const savedUserEmail = localStorage.getItem('currentUserEmail');
             if (savedUserEmail) {
                 const user = users.find(u => u.email === savedUserEmail);
-                if (user) {
-                    currentUser = user;
-                    return true;
-                } else {
-                    localStorage.removeItem('currentUserEmail');
-                }
+                if (user) { currentUser = user; return true; }
+                else { localStorage.removeItem('currentUserEmail'); }
             }
             return false;
         }
@@ -354,7 +342,6 @@
             if (user) {
                 currentUser = user;
                 localStorage.setItem('currentUserEmail', user.email);
-                
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
                 document.getElementById('userName').innerHTML = user.name;
@@ -376,9 +363,7 @@
             } else {
                 document.getElementById('loginError').innerHTML = 'Email au password si sahihi!';
                 document.getElementById('loginError').style.display = 'block';
-                setTimeout(() => {
-                    document.getElementById('loginError').style.display = 'none';
-                }, 3000);
+                setTimeout(() => { document.getElementById('loginError').style.display = 'none'; }, 3000);
             }
         }
 
@@ -392,10 +377,8 @@
         function loadDashboard() {
             const today = new Date().toDateString();
             const todaySales = sales.filter(s => new Date(s.date).toDateString() === today);
-            const revenue = todaySales.reduce((sum, s) => sum + s.total, 0);
-            const profit = todaySales.reduce((sum, s) => sum + (s.profit || 0), 0);
-            document.getElementById('todayRevenue').innerText = revenue.toLocaleString();
-            document.getElementById('todayProfit').innerText = profit.toLocaleString();
+            document.getElementById('todayRevenue').innerText = todaySales.reduce((sum, s) => sum + s.total, 0).toLocaleString();
+            document.getElementById('todayProfit').innerText = todaySales.reduce((sum, s) => sum + (s.profit || 0), 0).toLocaleString();
             const stockValue = products.reduce((sum, p) => sum + (p.stock * p.sellingPrice), 0);
             document.getElementById('stockValue').innerText = stockValue.toLocaleString();
             const totalCost = products.reduce((sum, p) => sum + (p.stock * (p.costPrice || 0)), 0);
@@ -410,24 +393,16 @@
             const saleCategory = document.getElementById('saleCategory');
             const stockCategory = document.getElementById('stockCategory');
             
-            if (categories.length === 0) {
-                container.innerHTML = '<p>Hakuna categories. Ongeza category kwanza.</p>';
-                return;
-            }
+            if (categories.length === 0) { container.innerHTML = '<p>Hakuna categories. Ongeza category kwanza.</p>'; return; }
             
             let html = '<table><thead><tr><th>Jina la Category</th><th>Kitendo</th></tr></thead><tbody>';
             let options = '<option value="">Chagua Category</option>';
-            
             categories.forEach((cat, idx) => {
-                html += `<tr>
-                    <td><strong>📁 ${cat}</strong></td>
-                    <td><button onclick="deleteCategory(${idx})" class="btn-danger">🗑️ Futa</button></td>
-                </tr>`;
+                html += `<tr><td><strong>📁 ${cat}</strong></td><td><button onclick="deleteCategory(${idx})" class="btn-danger">🗑️ Futa</button></td></tr>`;
                 options += `<option value="${cat}">${cat}</option>`;
             });
             html += '</tbody></table>';
             container.innerHTML = html;
-            
             categorySelect.innerHTML = options;
             filterSelect.innerHTML = '<option value="all">Category Zote</option>' + options;
             saleCategory.innerHTML = '<option value="">Chagua Category</option>' + options;
@@ -455,13 +430,9 @@
             }
         }
 
-        function generateSKU() {
-            const name = document.getElementById('productName').value;
-            if (name) {
-                document.getElementById('productSku').value = name.substring(0, 3).toUpperCase() + '-' + Math.floor(Math.random() * 10000);
-            }
-        }
-        document.getElementById('productName')?.addEventListener('input', generateSKU);
+        document.getElementById('productName')?.addEventListener('input', function() {
+            if (this.value) document.getElementById('productSku').value = this.value.substring(0, 3).toUpperCase() + '-' + Math.floor(Math.random() * 10000);
+        });
 
         function createProduct() {
             const name = document.getElementById('productName').value.trim();
@@ -495,39 +466,29 @@
             const filter = document.getElementById('filterCategory').value;
             const filtered = filter === 'all' ? products : products.filter(p => p.category === filter);
             const container = document.getElementById('productsList');
-            
-            if (filtered.length === 0) {
-                container.innerHTML = '<p style="text-align:center; padding:40px;">📦 Hakuna bidhaa. Ongeza bidhaa kwanza.</p>';
-                return;
-            }
+            if (filtered.length === 0) { container.innerHTML = '<p style="text-align:center; padding:40px;">📦 Hakuna bidhaa. Ongeza bidhaa kwanza.</p>'; return; }
             
             let html = '<div class="products-grid">';
             filtered.forEach(p => {
                 const isLow = p.stock <= p.alertLevel;
                 const profitPerUnit = p.sellingPrice - (p.costPrice || 0);
-                html += `
-                    <div class="product-card">
-                        <h4>${escapeHtml(p.name)}</h4>
-                        <div class="price">TZS ${p.sellingPrice.toLocaleString()}</div>
-                        <div class="stock ${isLow ? 'low' : ''}">📦 Stock: ${p.stock} ${isLow ? '⚠️ Inazidi kuisha!' : ''}</div>
-                        <div style="font-size:12px; color:#666;">SKU: ${p.sku} | Category: ${p.category}</div>
-                        <div style="font-size:12px; color:#10b981;">💰 Faida/Unit: TZS ${profitPerUnit.toLocaleString()}</div>
-                        <div class="actions">
-                            <button onclick="editProduct(${p.id})" class="btn-warning btn-sm">✏️ Badilisha Bei</button>
-                            <button onclick="deleteProduct(${p.id})" class="btn-danger btn-sm">🗑️ Futa</button>
-                        </div>
+                html += `<div class="product-card">
+                    <h4>${escapeHtml(p.name)}</h4>
+                    <div class="price">TZS ${p.sellingPrice.toLocaleString()}</div>
+                    <div class="stock ${isLow ? 'low' : ''}">📦 Stock: ${p.stock} ${isLow ? '⚠️ Inazidi kuisha!' : ''}</div>
+                    <div style="font-size:12px; color:#666;">SKU: ${p.sku} | Category: ${p.category}</div>
+                    <div style="font-size:12px; color:#10b981;">💰 Faida/Unit: TZS ${profitPerUnit.toLocaleString()}</div>
+                    <div class="actions">
+                        <button onclick="editProduct(${p.id})" class="btn-warning btn-sm">✏️ Badilisha Bei</button>
+                        <button onclick="deleteProduct(${p.id})" class="btn-danger btn-sm">🗑️ Futa</button>
                     </div>
-                `;
+                </div>`;
             });
             html += '</div>';
             container.innerHTML = html;
         }
 
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
+        function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
 
         function editProduct(id) {
             const product = products.find(p => p.id === id);
@@ -557,34 +518,19 @@
 
         function displayCustomers() {
             const container = document.getElementById('customersList');
-            if (customers.length === 0) {
-                container.innerHTML = '<p>Hakuna wateja. Ongeza mteja kwanza.</p>';
-                return;
-            }
+            if (customers.length === 0) { container.innerHTML = '<p>Hakuna wateja. Ongeza mteja kwanza.</p>'; return; }
             let html = '<table><thead><tr><th>Jina</th><th>Simu</th><th>Email</th><th>Anwani</th><th>Kitendo</th></tr></thead><tbody>';
             customers.forEach((c, idx) => {
-                html += `<tr>
-                    <td><strong>${c.name}</strong></td>
-                    <td>${c.phone || '-'}</td>
-                    <td>${c.email || '-'}</td>                    <td>${c.address || '-'}</td>
-                    <td><button onclick="deleteCustomer(${idx})" class="btn-danger">🗑️ Futa</button></td>
-                </tr>`;
+                html += `<tr><td><strong>${c.name}</strong></td><td>${c.phone || '-'}</td><td>${c.email || '-'}</td><td>${c.address || '-'}</td><td><button onclick="deleteCustomer(${idx})" class="btn-danger">🗑️ Futa</button></td></tr>`;
             });
             html += '</tbody></table>';
             container.innerHTML = html;
             
             const saleSelect = document.getElementById('saleCustomerSelect');
             let options = '<option value="">Mteja wa Kawaida</option>';
-            customers.forEach(c => {
-                options += `<option value="${c.name}" data-phone="${c.phone || ''}">${c.name} - ${c.phone || ''}</option>`;
-            });
+            customers.forEach(c => { options += `<option value="${c.name}" data-phone="${c.phone || ''}">${c.name} - ${c.phone || ''}</option>`; });
             saleSelect.innerHTML = options;
-            
-            saleSelect.onchange = function() {
-                const opt = this.options[this.selectedIndex];
-                const phoneInput = document.getElementById('saleCustomerPhone');
-                if (phoneInput) phoneInput.value = opt?.dataset?.phone || '';
-            };
+            saleSelect.onchange = function() { document.getElementById('saleCustomerPhone').value = this.options[this.selectedIndex]?.dataset?.phone || ''; };
         }
 
         function addCustomer() {
@@ -616,25 +562,16 @@
         function loadProductsForSale() {
             const category = document.getElementById('saleCategory').value;
             const select = document.getElementById('saleProduct');
-            if (!category) {
-                select.innerHTML = '<option value="">Chagua Category kwanza</option>';
-                return;
-            }
+            if (!category) { select.innerHTML = '<option value="">Chagua Category kwanza</option>'; return; }
             const filtered = products.filter(p => p.category === category && p.stock > 0);
-            if (filtered.length === 0) {
-                select.innerHTML = '<option value="">Hakuna bidhaa katika category hii</option>';
-                return;
-            }
+            if (filtered.length === 0) { select.innerHTML = '<option value="">Hakuna bidhaa katika category hii</option>'; return; }
             let html = '<option value="">Chagua Bidhaa</option>';
-            filtered.forEach(p => {
-                html += `<option value="${p.id}" data-price="${p.sellingPrice}" data-cost="${p.costPrice}" data-name="${p.name}" data-stock="${p.stock}">${p.name} - TZS ${p.sellingPrice.toLocaleString()} (Stock: ${p.stock})</option>`;
-            });
+            filtered.forEach(p => { html += `<option value="${p.id}" data-price="${p.sellingPrice}" data-cost="${p.costPrice}">${p.name} - TZS ${p.sellingPrice.toLocaleString()} (Stock: ${p.stock})</option>`; });
             select.innerHTML = html;
         }
 
         function updateSaleInfo() {
-            const select = document.getElementById('saleProduct');
-            const opt = select.options[select.selectedIndex];
+            const opt = document.getElementById('saleProduct').options[document.getElementById('saleProduct').selectedIndex];
             document.getElementById('productBasePrice').value = opt?.dataset?.price || 0;
             document.getElementById('customerPrice').value = '';
             document.getElementById('priceValidationMsg').innerHTML = '';
@@ -647,147 +584,77 @@
             const basePrice = parseFloat(document.getElementById('productBasePrice').value) || 0;
             const customerPrice = parseFloat(document.getElementById('customerPrice').value) || 0;
             const msgDiv = document.getElementById('priceValidationMsg');
-            
-            if (customerPrice === 0) {
-                msgDiv.innerHTML = '<span class="price-low">⚠️ Ingiza bei anayotoa mteja</span>';
-                document.getElementById('saleButton').disabled = true;
-                return;
-            }
-            if (customerPrice < basePrice) {
-                msgDiv.innerHTML = '<span class="price-low">❌ Bei ipo CHINI! Hauwezi kuuza kwa bei hii.</span>';
-                document.getElementById('saleButton').disabled = true;
-            } else if (customerPrice === basePrice) {
-                msgDiv.innerHTML = '<span class="price-match">✅ Bei inalingana! Unaweza kuuza.</span>';
-                document.getElementById('saleButton').disabled = false;
-            } else {
-                msgDiv.innerHTML = '<span class="price-high">💰 Bei IKO JUU! Unaweza kuuza kwa faida zaidi.</span>';
-                document.getElementById('saleButton').disabled = false;
-            }
+            if (customerPrice === 0) { msgDiv.innerHTML = '<span class="price-low">⚠️ Ingiza bei anayotoa mteja</span>'; document.getElementById('saleButton').disabled = true; return; }
+            if (customerPrice < basePrice) { msgDiv.innerHTML = '<span class="price-low">❌ Bei ipo CHINI! Hauwezi kuuza kwa bei hii.</span>'; document.getElementById('saleButton').disabled = true; }
+            else if (customerPrice === basePrice) { msgDiv.innerHTML = '<span class="price-match">✅ Bei inalingana! Unaweza kuuza.</span>'; document.getElementById('saleButton').disabled = false; }
+            else { msgDiv.innerHTML = '<span class="price-high">💰 Bei IKO JUU! Unaweza kuuza kwa faida zaidi.</span>'; document.getElementById('saleButton').disabled = false; }
             calculateTotal();
         }
 
         function calculateTotal() {
             const customerPrice = parseFloat(document.getElementById('customerPrice').value) || 0;
             const qty = parseInt(document.getElementById('quantity').value) || 0;
-            const select = document.getElementById('saleProduct');
-            const opt = select.options[select.selectedIndex];
+            const opt = document.getElementById('saleProduct').options[document.getElementById('saleProduct').selectedIndex];
             const cost = parseFloat(opt?.dataset?.cost || 0);
-            const total = customerPrice * qty;
-            const profit = (customerPrice - cost) * qty;
-            document.getElementById('totalAmount').value = total.toLocaleString();
-            document.getElementById('profitAmount').value = profit.toLocaleString();
+            document.getElementById('totalAmount').value = (customerPrice * qty).toLocaleString();
+            document.getElementById('profitAmount').value = ((customerPrice - cost) * qty).toLocaleString();
         }
 
         function recordSale() {
-            const select = document.getElementById('saleProduct');
-            const productId = parseInt(select.value);
+            const productId = parseInt(document.getElementById('saleProduct').value);
             const product = products.find(p => p.id === productId);
             if (!product) return alert('Chagua bidhaa');
-            
             const qty = parseInt(document.getElementById('quantity').value);
             const customerPrice = parseFloat(document.getElementById('customerPrice').value);
             const total = customerPrice * qty;
             const paymentMethod = document.getElementById('paymentMethod').value;
             const customerSelect = document.getElementById('saleCustomerSelect');
-            const selectedOption = customerSelect.options[customerSelect.selectedIndex];
-            const customerName = selectedOption?.value === '' ? 'Mteja wa Kawaida' : (selectedOption?.text.split(' - ')[0] || 'Mteja');
+            const customerName = customerSelect.value === '' ? 'Mteja wa Kawaida' : (customerSelect.options[customerSelect.selectedIndex]?.text.split(' - ')[0] || 'Mteja');
             const customerPhone = document.getElementById('saleCustomerPhone').value;
-            
             if (customerPrice < product.costPrice) return alert('Bei ya mteja ipo chini ya bei ya kununulia!');
             if (product.stock < qty) return alert(`Stock haitoshi! Zipo ${product.stock} tu.`);
-            
             const profit = (customerPrice - product.costPrice) * qty;
             product.stock -= qty;
             const invoice = 'INV-' + Date.now();
-            const saleRecord = {
-                id: Date.now(),
-                invoice,
-                customerName,
-                customerPhone,
-                items: [{ productName: product.name, quantity: qty, price: customerPrice, total }],
-                total,
-                profit,
-                payment: paymentMethod,
-                date: new Date().toISOString()
-            };
+            const saleRecord = { id: Date.now(), invoice, customerName, customerPhone, items: [{ productName: product.name, quantity: qty, price: customerPrice, total }], total, profit, payment: paymentMethod, date: new Date().toISOString() };
             sales.push(saleRecord);
             saveData();
             lastReceipt = saleRecord;
-            
             showSuccess('saleSuccess', `✅ Mauzo yamerekodiwa! Invoice: ${invoice} | Faida: TZS ${profit.toLocaleString()}`);
-            
             document.getElementById('quantity').value = 1;
             document.getElementById('customerPrice').value = '';
             document.getElementById('priceValidationMsg').innerHTML = '';
             document.getElementById('saleButton').disabled = true;
-            
             displayProducts();
             loadDashboard();
             checkLowStock();
             loadStockSummary();
             showReceipt(saleRecord);
-            
-            if (customerPhone && customerPhone.trim() !== '') {
-                alert(`📱 SMS imetumwa kwa ${customerPhone}\n\nInvoice: ${invoice}\nTotal: TZS ${total.toLocaleString()}`);
-            }
+            if (customerPhone && customerPhone.trim() !== '') alert(`📱 SMS imetumwa kwa ${customerPhone}\n\nInvoice: ${invoice}\nTotal: TZS ${total.toLocaleString()}`);
         }
 
         function checkLowStock() {
             const low = products.filter(p => p.stock <= p.alertLevel);
             document.getElementById('lowStockCount').innerText = low.length;
             const div = document.getElementById('lowStockList');
-            if (low.length === 0) {
-                div.innerHTML = '<p>✅ Hakuna bidhaa zinazoisha. Stock zote ni nzuri.</p>';
-                return;
-            }
+            if (low.length === 0) { div.innerHTML = '<p>✅ Hakuna bidhaa zinazoisha. Stock zote ni nzuri.</p>'; return; }
             let html = '<table><thead><tr><th>Bidhaa</th><th>Stock</th><th>Alert Level</th><th>Action</th></tr></thead><tbody>';
-            low.forEach(p => {
-                html += `<tr>
-                    <td><strong>${p.name}</strong></td>
-                    <td class="low-stock">${p.stock} tu</td>
-                    <td>${p.alertLevel}</td>
-                    <td><button onclick="quickAddStock(${p.id})" class="btn-warning btn-sm">➕ Ongeza Stock</button></td>
-                </tr>`;
-            });
+            low.forEach(p => { html += `<tr><td><strong>${p.name}</strong></td><td class="low-stock">${p.stock} tu</td><td>${p.alertLevel}</td><td><button onclick="quickAddStock(${p.id})" class="btn-warning btn-sm">➕ Ongeza Stock</button></td></tr>`; });
             html += '</tbody></table>';
             div.innerHTML = html;
         }
 
-        function quickAddStock(id) {
-            const qty = prompt('Kiasi cha kuongeza stock:');
-            if (qty && parseInt(qty) > 0) {
-                addStockToProduct(id, parseInt(qty));
-            }
-        }
-
-        function addStockToProduct(id, qty) {
-            const p = products.find(p => p.id === id);
-            if (p) {
-                p.stock += qty;
-                saveData();
-                displayProducts();
-                checkLowStock();
-                loadStockSummary();
-                alert(`✅ Stock imeongezeka! Sasa stock: ${p.stock}`);
-            }
-        }
+        function quickAddStock(id) { const qty = prompt('Kiasi cha kuongeza stock:'); if (qty && parseInt(qty) > 0) addStockToProduct(id, parseInt(qty)); }
+        function addStockToProduct(id, qty) { const p = products.find(p => p.id === id); if (p) { p.stock += qty; saveData(); displayProducts(); checkLowStock(); loadStockSummary(); alert(`✅ Stock imeongezeka! Sasa stock: ${p.stock}`); } }
 
         function loadProductsForStock() {
             const cat = document.getElementById('stockCategory').value;
             const select = document.getElementById('stockProduct');
-            if (!cat) {
-                select.innerHTML = '<option value="">Chagua Category kwanza</option>';
-                return;
-            }
+            if (!cat) { select.innerHTML = '<option value="">Chagua Category kwanza</option>'; return; }
             const filtered = products.filter(p => p.category === cat);
-            if (filtered.length === 0) {
-                select.innerHTML = '<option value="">Hakuna bidhaa katika category hii</option>';
-                return;
-            }
+            if (filtered.length === 0) { select.innerHTML = '<option value="">Hakuna bidhaa katika category hii</option>'; return; }
             let html = '<option value="">Chagua Bidhaa</option>';
-            filtered.forEach(p => {
-                html += `<option value="${p.id}">${p.name} (Stock: ${p.stock})</option>`;
-            });
+            filtered.forEach(p => { html += `<option value="${p.id}">${p.name} (Stock: ${p.stock})</option>`; });
             select.innerHTML = html;
         }
 
@@ -795,16 +662,11 @@
             const productId = parseInt(document.getElementById('stockProduct').value);
             const product = products.find(p => p.id === productId);
             if (!product) return alert('Chagua bidhaa');
-            
             const qty = parseInt(document.getElementById('addStockQty').value);
             if (!qty || qty <= 0) return alert('Weka kiasi sahihi');
-            
             const newPrice = parseFloat(document.getElementById('newPrice').value);
             product.stock += qty;
-            if (newPrice && newPrice > 0) {
-                if (newPrice < product.costPrice) return alert('Bei mpya haiwezi kuwa chini ya cost!');
-                product.sellingPrice = newPrice;
-            }
+            if (newPrice && newPrice > 0) { if (newPrice < product.costPrice) return alert('Bei mpya haiwezi kuwa chini ya cost!'); product.sellingPrice = newPrice; }
             saveData();
             showSuccess('stockAddSuccess', `✅ Stock imeongezeka! Sasa stock: ${product.stock}`);
             document.getElementById('addStockQty').value = '';
@@ -819,78 +681,42 @@
             const totalCost = products.reduce((sum, p) => sum + (p.stock * (p.costPrice || 0)), 0);
             const expectedProfit = totalValue - totalCost;
             document.getElementById('expectedProfit').innerText = expectedProfit.toLocaleString();
-            document.getElementById('stockSummary').innerHTML = `
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
-                    <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; text-align: center;">
-                        <strong>Jumla ya Bidhaa</strong><br>
-                        <span style="font-size: 24px; font-weight: bold; color: #10b981;">${products.length}</span>
-                    </div>
-                    <div style="background: #eff6ff; padding: 15px; border-radius: 8px; text-align: center;">
-                        <strong>Thamani ya Stock</strong><br>
-                        <span style="font-size: 24px; font-weight: bold; color: #1a73e8;">TZS ${totalValue.toLocaleString()}</span>
-                    </div>
-                    <div style="background: #fef3c7; padding: 15px; border-radius: 8px; text-align: center;">
-                        <strong>Gharama ya Stock</strong><br>
-                        <span style="font-size: 24px; font-weight: bold; color: #f59e0b;">TZS ${totalCost.toLocaleString()}</span>
-                    </div>
-                    <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 15px; border-radius: 8px; text-align: center; color: white;">
-                        <strong>💰 Faida Inayotarajiwa</strong><br>
-                        <span style="font-size: 24px; font-weight: bold;">TZS ${expectedProfit.toLocaleString()}</span>
-                    </div>
-                </div>
-                <p style="margin-top: 15px; text-align: center; color: #666;">Faida Halisi kutoka kwa Mauzo Yote: TZS ${sales.reduce((sum, s) => sum + (s.profit || 0), 0).toLocaleString()}</p>
-            `;
+            document.getElementById('stockSummary').innerHTML = `<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; text-align: center;"><strong>Jumla ya Bidhaa</strong><br><span style="font-size: 24px; font-weight: bold; color: #10b981;">${products.length}</span></div>
+                <div style="background: #eff6ff; padding: 15px; border-radius: 8px; text-align: center;"><strong>Thamani ya Stock</strong><br><span style="font-size: 24px; font-weight: bold; color: #1a73e8;">TZS ${totalValue.toLocaleString()}</span></div>
+                <div style="background: #fef3c7; padding: 15px; border-radius: 8px; text-align: center;"><strong>Gharama ya Stock</strong><br><span style="font-size: 24px; font-weight: bold; color: #f59e0b;">TZS ${totalCost.toLocaleString()}</span></div>
+                <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 15px; border-radius: 8px; text-align: center; color: white;"><strong>💰 Faida Inayotarajiwa</strong><br><span style="font-size: 24px; font-weight: bold;">TZS ${expectedProfit.toLocaleString()}</span></div>
+            </div><p style="margin-top: 15px; text-align: center; color: #666;">Faida Halisi kutoka kwa Mauzo Yote: TZS ${sales.reduce((sum, s) => sum + (s.profit || 0), 0).toLocaleString()}</p>`;
         }
 
-        // USER MANAGEMENT
         function loadUsers() {
             if (currentUser?.role !== 'admin') return;
             const container = document.getElementById('usersList');
             const otherUsers = users.filter(u => u.email !== 'malabamalaba26@gmail.com');
-            
-            if (otherUsers.length === 0) {
-                container.innerHTML = '<p style="text-align: center; padding: 20px;">Hakuna wafanyakazi wengine. Ongeza mfanyakazi kwanza.</p>';
-                return;
-            }
-            
-            let html = `<tr><thead><tr><th>Jina Kamili</th><th>Barua pepe</th><th>Namba ya Simu</th><th>Nafasi</th><th>Kitendo</th></tr></thead><tbody>`;
-            otherUsers.forEach((u) => {
-                html += `<tr><td><strong>${escapeHtml(u.name)}</strong></td><td>${escapeHtml(u.email)}</td><td>${u.phone || '-'}</td><td>${u.role === 'admin' ? '👑 Admin' : '👤 Cashier'}</td><td><button onclick="deleteUserByEmail('${escapeHtml(u.email)}')" class="btn-danger btn-sm">🗑️ Futa</button></td></tr>`;
-            });
-            html += `</tbody></table>`;
+            if (otherUsers.length === 0) { container.innerHTML = '<p style="text-align: center; padding: 20px;">Hakuna wafanyakazi wengine. Ongeza mfanyakazi kwanza.</p>'; return; }
+            let html = '</table><thead><tr><th>Jina Kamili</th><th>Barua pepe</th><th>Namba ya Simu</th><th>Nafasi</th><th>Kitendo</th></tr></thead><tbody>';
+            otherUsers.forEach(u => { html += `<tr><td><strong>${escapeHtml(u.name)}</strong></td><td>${escapeHtml(u.email)}</td><td>${u.phone || '-'}</td><td>${u.role === 'admin' ? '👑 Admin' : '👤 Cashier'}</td><td><button onclick="deleteUserByEmail('${escapeHtml(u.email)}')" class="btn-danger btn-sm">🗑️ Futa</button></td></tr>`; });
+            html += '</tbody></table>';
             container.innerHTML = html;
         }
 
-        function deleteUserByEmail(email) {
-            if (confirm('Je, una uhakika unataka kufuta mfanyakazi huyu?')) {
-                users = users.filter(u => u.email !== email);
-                saveData();
-                loadUsers();
-                showSuccess('userSuccess', '✅ Mfanyakazi amefutwa kikamilifu!');
-            }
-        }
+        function deleteUserByEmail(email) { if (confirm('Je, una uhakika unataka kufuta mfanyakazi huyu?')) { users = users.filter(u => u.email !== email); saveData(); loadUsers(); showSuccess('userSuccess', '✅ Mfanyakazi amefutwa kikamilifu!'); } }
 
         function createUser() {
-            if (currentUser?.role !== 'admin') {
-                alert('Admin pekee ndio anaweza kuongeza wafanyakazi!');
-                return;
-            }
-            
+            if (currentUser?.role !== 'admin') { alert('Admin pekee ndio anaweza kuongeza wafanyakazi!'); return; }
             const name = document.getElementById('userFullName').value.trim();
             const email = document.getElementById('userEmail').value.trim();
             const phone = document.getElementById('userPhone').value.trim();
             const role = document.getElementById('userRoleSelect').value;
             const password = document.getElementById('userPassword').value;
-            
             if (!name) { alert('❌ Tafadhali jaza jina la mfanyakazi'); return; }
             if (!email) { alert('❌ Tafadhali jaza barua pepe'); return; }
             if (!password) { alert('❌ Tafadhali jaza nenosiri'); return; }
             if (password.length < 4) { alert('❌ Nenosiri lazima iwe na herufi 4 au zaidi'); return; }
             if (users.find(u => u.email === email)) { alert(`❌ Email "${email}" tayari ipo!`); return; }
-            
             users.push({ id: Date.now(), name, email, phone: phone || '', role, password });
             saveData();
-            showSuccess('userSuccess', `✅ Mfanyakazi ${name} ameongezwa!`);
+            showSuccess('userSuccess', `✅ Mfanyakazi ${name} ameongezwa kikamilifu!`);
             document.getElementById('userFullName').value = '';
             document.getElementById('userEmail').value = '';
             document.getElementById('userPhone').value = '';
@@ -900,69 +726,21 @@
 
         function showReceipt(sale) {
             const now = new Date();
-            const dateStr = now.toLocaleDateString('sw-TZ');
-            const timeStr = now.toLocaleTimeString('sw-TZ');
-            const itemsHtml = sale.items.map(i => `<tr><td><strong>${i.productName}</strong></td><td style="text-align:center;">${i.quantity}</td><td style="text-align:right;">TZS ${i.price.toLocaleString()}</td><td style="text-align:right;">TZS ${i.total.toLocaleString()}</td></tr>`).join('');
-            
-            document.getElementById('receiptContent').innerHTML = `
-                <div style="text-align:center; font-family: monospace;">
-                    <h2>🏪 SMART POS</h2>
-                    <h3>Shinyanga, Tanzania</h3>
-                    <p>Simu: ${STORE_PHONE}</p>
-                    <hr>
-                    <p><strong>RISITI YA MALIPO</strong></p>
-                    <hr>
-                    <p><strong>Invoice:</strong> ${sale.invoice}</p>
-                    <p><strong>Tarehe:</strong> ${dateStr} ${timeStr}</p>
-                    <p><strong>Mteja:</strong> ${sale.customerName}</p>
-                    ${sale.customerPhone ? `<p><strong>Simu:</strong> ${sale.customerPhone}</p>` : ''}
-                    <hr>
-                    <table style="width:100%; border-collapse: collapse;">
-                        <thead><tr><th>Bidhaa</th><th>Idadi</th><th>Bei</th><th>Jumla</th></tr></thead>
-                        <tbody>${itemsHtml}</tbody>
-                        <tfoot><tr><td colspan="3"><strong>JUMLA:</strong></td><td style="text-align:right;"><strong>TZS ${sale.total.toLocaleString()}</strong></td></tr></tfoot>
-                    </table>
-                    <hr>
-                    <p><strong>Njia ya Malipo:</strong> ${sale.payment?.toUpperCase()}</p>
-                    <p>Asante kwa kununua SMART POS!</p>
-                    <p>Karibu tena</p>
-                </div>
-            `;
+            const itemsHtml = sale.items.map(i => `<tr><td><strong>${i.productName}</strong></td><td style="text-align:center;">${i.quantity}</td><td style="text-align:right;">TZS ${i.price.toLocaleString()}</td><td style="text-align:right;">TZS ${i.total.toLocaleString()}</td>`).join('');
+            document.getElementById('receiptContent').innerHTML = `<div style="text-align:center; font-family: monospace;"><h2>🏪 SMART POS</h2><h3>Shinyanga, Tanzania</h3><p>Simu: ${STORE_PHONE}</p><hr><p><strong>RISITI YA MALIPO</strong></p><hr><p><strong>Invoice:</strong> ${sale.invoice}</p><p><strong>Tarehe:</strong> ${now.toLocaleDateString('sw-TZ')} ${now.toLocaleTimeString('sw-TZ')}</p><p><strong>Mteja:</strong> ${sale.customerName}</p>${sale.customerPhone ? `<p><strong>Simu:</strong> ${sale.customerPhone}</p>` : ''}<hr><table style="width:100%; border-collapse: collapse;"><thead><tr style="border-bottom:1px solid #000;"><th>Bidhaa</th><th>Idadi</th><th>Bei</th><th>Jumla</th></tr></thead><tbody>${itemsHtml}</tbody><tfoot><tr style="border-top:1px solid #000;"><td colspan="3"><strong>JUMLA:</strong></td><td style="text-align:right;"><strong>TZS ${sale.total.toLocaleString()}</strong></td></tr></tfoot></table><hr><p><strong>Njia ya Malipo:</strong> ${sale.payment?.toUpperCase()}</p><p>Asante kwa kununua SMART POS!</p><p>Karibu tena</p></div>`;
             document.getElementById('receiptModal').style.display = 'flex';
         }
 
         function closeReceipt() { document.getElementById('receiptModal').style.display = 'none'; }
-        
-        function printReceipt() {
-            const w = window.open('', '_blank');
-            w.document.write('<html><head><title>RISITI - SMART POS</title><style>body{font-family:monospace;padding:20px}</style></head><body>' + document.getElementById('receiptContent').innerHTML + '</body></html>');
-            w.print();
-        }
-        
-        function sendSMSReceipt() {
-            const phone = document.getElementById('saleCustomerPhone').value;
-            if (phone && phone.trim() !== '' && lastReceipt) {
-                alert(`📱 SMS imetumwa kwa ${phone}\n\nInvoice: ${lastReceipt.invoice}\nTotal: TZS ${lastReceipt.total.toLocaleString()}`);
-            } else if (!phone || phone.trim() === '') {
-                alert('⚠️ Tafadhali weka namba ya simu ya mteja!');
-            } else {
-                alert('Hakuna taarifa za mauzo');
-            }
-        }
-
-        function showSuccess(id, msg) {
-            const el = document.getElementById(id);
-            el.innerHTML = msg;
-            el.style.display = 'block';
-            setTimeout(() => el.style.display = 'none', 3000);
-        }
+        function printReceipt() { const w = window.open('', '_blank'); w.document.write('<html><head><title>RISITI - SMART POS</title><style>body{font-family:monospace;padding:20px}</style></head><body>' + document.getElementById('receiptContent').innerHTML + '</body></html>'); w.print(); }
+        function sendSMSReceipt() { const phone = document.getElementById('saleCustomerPhone').value; if (phone && phone.trim() !== '' && lastReceipt) alert(`📱 SMS imetumwa kwa ${phone}\n\nInvoice: ${lastReceipt.invoice}\nTotal: TZS ${lastReceipt.total.toLocaleString()}`); else if (!phone || phone.trim() === '') alert('⚠️ Tafadhali weka namba ya simu ya mteja!'); else alert('Hakuna taarifa za mauzo'); }
+        function showSuccess(id, msg) { const el = document.getElementById(id); el.innerHTML = msg; el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 3000); }
 
         function showTab(tab) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(`${tab}Tab`).classList.add('active');
             event.target.classList.add('active');
-            
             if (tab === 'stock') { checkLowStock(); loadStockSummary(); }
             if (tab === 'products') { displayProducts(); }
             if (tab === 'customers') { displayCustomers(); }
@@ -970,30 +748,15 @@
             if (tab === 'users' && currentUser?.role === 'admin') { loadUsers(); }
         }
 
-        // INITIALIZATION
         if (checkSavedSession()) {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
             document.getElementById('userName').innerHTML = currentUser.name;
             document.getElementById('userRole').innerHTML = currentUser.role === 'admin' ? '👑 Admin' : '👤 Cashier';
-            
-            if (currentUser.role !== 'admin') {
-                document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
-            } else {
-                document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
-                loadUsers();
-            }
-            
-            loadDashboard();
-            loadCategories();
-            displayProducts();
-            displayCustomers();
-            checkLowStock();
-            loadStockSummary();
-        } else {
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('dashboard').style.display = 'none';
-        }
+            if (currentUser.role !== 'admin') { document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none'); }
+            else { document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block'); loadUsers(); }
+            loadDashboard(); loadCategories(); displayProducts(); displayCustomers(); checkLowStock(); loadStockSummary();
+        } else { document.getElementById('loginScreen').style.display = 'flex'; document.getElementById('dashboard').style.display = 'none'; }
     </script>
 </body>
 </html>

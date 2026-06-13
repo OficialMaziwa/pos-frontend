@@ -15,7 +15,7 @@
         .login-card button { width: 100%; padding: 12px; background: #1a73e8; color: white; border: none; border-radius: 8px; cursor: pointer; }
         
         .dashboard { display: none; }
-        .navbar { background: white; padding: 15px 20px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar { background: white; padding: 15px 20px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .navbar h3 { color: #1a73e8; }
         .user-info { display: flex; align-items: center; gap: 15px; }
         .role-badge { background: #1a73e8; color: white; padding: 5px 10px; border-radius: 20px; font-size: 12px; }
@@ -45,11 +45,12 @@
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background: #f5f5f5; }
+        th { background: #f5f5f5; position: sticky; top: 0; }
         
         .btn-primary { background: #1a73e8; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
         .btn-danger { background: #dc2626; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
         .btn-success { background: #10b981; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        .btn-warning { background: #f59e0b; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
         .low-stock { color: #f59e0b; font-weight: bold; }
         .success { background: #d1fae5; color: #065f46; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: none; }
         .error { background: #fee2e2; color: #dc2626; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: none; }
@@ -58,9 +59,9 @@
         .modal-content { background: white; padding: 30px; border-radius: 12px; max-width: 550px; width: 90%; max-height: 85vh; overflow-y: auto; }
         .close { float: right; cursor: pointer; font-size: 24px; }
         
-        .price-match { color: #10b981; }
-        .price-low { color: #dc2626; }
-        .price-high { color: #f59e0b; }
+        .price-match { color: #10b981; font-weight: bold; }
+        .price-low { color: #dc2626; font-weight: bold; }
+        .price-high { color: #f59e0b; font-weight: bold; }
         
         @media (max-width: 768px) { .stats { grid-template-columns: repeat(2, 1fr); } .form-row { grid-template-columns: 1fr; } }
     </style>
@@ -98,121 +99,144 @@
             </div>
 
             <div class="tabs">
-                <button class="tab-btn active" onclick="showTab('dashboard')">📊 Dashboard</button>
+                <button class="tab-btn active" onclick="showTab('products')">📦 Bidhaa</button>
                 <button class="tab-btn" onclick="showTab('categories')">📂 Categories</button>
-                <button class="tab-btn" onclick="showTab('products')">📦 Bidhaa</button>
                 <button class="tab-btn" onclick="showTab('customers')">👥 Wateja</button>
                 <button class="tab-btn" onclick="showTab('sales')">💰 Mauzo</button>
                 <button class="tab-btn" onclick="showTab('stock')">📊 Stock</button>
-                <button class="tab-btn admin-only" onclick="showTab('users')">👤 Wafanyakazi</button>
             </div>
 
-            <div id="dashboardTab" class="tab-content active">
-                <div class="card"><h3>📈 Muhtasari wa Leo</h3><div id="dashboardSummary"></div></div>
-                <div class="card"><h3>🏆 Bidhaa Zinazouzwa Sana</h3><div id="topProducts"></div></div>
-            </div>
-
-            <div id="categoriesTab" class="tab-content">
-                <div class="card">
-                    <h3>➕ Ongeza Category</h3>
-                    <input type="text" id="newCategoryName" placeholder="Jina la category" style="width:100%; padding:10px; margin-bottom:10px;">
-                    <button onclick="addCategory()" class="btn-primary">Ongeza Category</button>
-                    <div id="categorySuccess" class="success"></div>
-                </div>
-                <div class="card"><h3>📁 Orodha ya Categories</h3><div id="categoriesList"></div></div>
-            </div>
-
-            <div id="productsTab" class="tab-content">
+            <!-- Products Tab -->
+            <div id="productsTab" class="tab-content active">
                 <div class="card">
                     <h3>➕ Ongeza Bidhaa</h3>
                     <div id="productSuccess" class="success"></div>
-                    <input type="text" id="productName" placeholder="Jina la bidhaa" style="width:100%; padding:10px; margin-bottom:10px;">
-                    <input type="text" id="productSku" placeholder="SKU" style="width:100%; padding:10px; margin-bottom:10px;">
-                    <select id="categorySelect" style="width:100%; padding:10px; margin-bottom:10px;"></select>
-                    <input type="number" id="productStock" placeholder="Stock" value="0" style="width:100%; padding:10px; margin-bottom:10px;">
-                    <input type="number" id="costPrice" placeholder="Bei ya kununulia" step="100" style="width:100%; padding:10px; margin-bottom:10px;">
-                    <input type="number" id="sellingPrice" placeholder="Bei ya kuuza" step="100" style="width:100%; padding:10px; margin-bottom:10px;">
-                    <input type="number" id="alertLevel" placeholder="Alert Level" value="10" style="width:100%; padding:10px; margin-bottom:10px;">
+                    <div class="form-row">
+                        <div class="form-group"><label>Jina la Bidhaa</label><input type="text" id="productName" placeholder="Jina la bidhaa"></div>
+                        <div class="form-group"><label>SKU (Inajaza Otomatiki)</label><input type="text" id="productSku" readonly style="background:#f5f5f5"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Category</label><select id="categorySelect"></select></div>
+                        <div class="form-group"><label>Kiasi (Stock)</label><input type="number" id="productStock" value="0"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Bei ya Kununulia (TZS)</label><input type="number" id="costPrice" step="100"></div>
+                        <div class="form-group"><label>Bei ya Kuuza (TZS)</label><input type="number" id="sellingPrice" step="100"></div>
+                    </div>
+                    <div class="form-group"><label>Kiwango cha Tahadhari</label><input type="number" id="alertLevel" value="10"></div>
                     <button onclick="createProduct()" class="btn-primary">Ongeza Bidhaa</button>
                 </div>
-                <div class="card"><h3>📋 Orodha ya Bidhaa</h3><select id="filterCategory" onchange="displayProducts()"><option value="all">Zote</option></select><div id="productsList"></div></div>
+                <div class="card">
+                    <h3>📋 Orodha ya Bidhaa</h3>
+                    <div class="form-group"><label>Chuja kwa Category</label><select id="filterCategory" onchange="displayProducts()"><option value="all">Category Zote</option></select></div>
+                    <div class="table-responsive"><div id="productsList"></div></div>
+                </div>
             </div>
 
+            <!-- Categories Tab -->
+            <div id="categoriesTab" class="tab-content">
+                <div class="card">
+                    <h3>➕ Ongeza Category</h3>
+                    <div class="form-group"><label>Jina la Category</label><input type="text" id="newCategoryName" placeholder="Kwa mfano: Vyakula, Dawa, Nguo"></div>
+                    <button onclick="addCategory()" class="btn-primary">Ongeza Category</button>
+                    <div id="categorySuccess" class="success"></div>
+                </div>
+                <div class="card">
+                    <h3>📁 Orodha ya Categories</h3>
+                    <div class="table-responsive"><div id="categoriesList"></div></div>
+                </div>
+            </div>
+
+            <!-- Customers Tab -->
             <div id="customersTab" class="tab-content">
                 <div class="card">
                     <h3>➕ Ongeza Mteja</h3>
-                    <input type="text" id="customerName" placeholder="Jina" style="width:100%; padding:10px; margin-bottom:10px;">
-                    <input type="tel" id="customerPhone" placeholder="Simu" style="width:100%; padding:10px; margin-bottom:10px;">
-                    <input type="email" id="customerEmail" placeholder="Email" style="width:100%; padding:10px; margin-bottom:10px;">
-                    <input type="text" id="customerAddress" placeholder="Anwani" style="width:100%; padding:10px; margin-bottom:10px;">
-                    <button onclick="addCustomer()" class="btn-primary">Ongeza Mteja</button>
                     <div id="customerSuccess" class="success"></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Jina Kamili</label><input type="text" id="customerName" placeholder="Jina la mteja"></div>
+                        <div class="form-group"><label>Namba ya Simu</label><input type="tel" id="customerPhone" placeholder="07XXXXXXXX"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Email</label><input type="email" id="customerEmail" placeholder="Barua pepe"></div>
+                        <div class="form-group"><label>Anwani</label><input type="text" id="customerAddress" placeholder="Anwani"></div>
+                    </div>
+                    <button onclick="addCustomer()" class="btn-primary">Ongeza Mteja</button>
                 </div>
-                <div class="card"><h3>📋 Orodha ya Wateja</h3><div id="customersList"></div></div>
+                <div class="card">
+                    <h3>📋 Orodha ya Wateja</h3>
+                    <div class="table-responsive"><div id="customersList"></div></div>
+                </div>
             </div>
 
+            <!-- Sales Tab -->
             <div id="salesTab" class="tab-content">
                 <div class="card">
                     <h3>🛒 Rekodi Mauzo</h3>
                     <div id="saleSuccess" class="success"></div>
-                    <select id="saleCustomerSelect" style="width:100%; padding:10px; margin-bottom:10px;"><option value="">Mteja wa Kawaida</option></select>
-                    <input type="tel" id="saleCustomerPhone" placeholder="Simu ya mteja" style="width:100%; padding:10px; margin-bottom:10px;">
-                    <select id="saleCategory" onchange="loadProductsForSale()" style="width:100%; padding:10px; margin-bottom:10px;"><option value="">Chagua Category</option></select>
-                    <select id="saleProduct" onchange="updateSaleInfo()" style="width:100%; padding:10px; margin-bottom:10px;"></select>
-                    <input type="number" id="productBasePrice" readonly style="width:100%; padding:10px; margin-bottom:10px;">
-                    <input type="number" id="customerPrice" oninput="validateCustomerPrice()" placeholder="Bei ya mteja" style="width:100%; padding:10px; margin-bottom:10px;">
+                    <div class="form-row">
+                        <div class="form-group"><label>Mteja</label><select id="saleCustomerSelect"><option value="">Mteja wa Kawaida</option></select></div>
+                        <div class="form-group"><label>Namba ya Simu ya Mteja</label><input type="tel" id="saleCustomerPhone" placeholder="07XXXXXXXX"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Category</label><select id="saleCategory" onchange="loadProductsForSale()"><option value="">Chagua Category</option></select></div>
+                        <div class="form-group"><label>Bidhaa</label><select id="saleProduct" onchange="updateSaleInfo()"></select></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Bei ya Bidhaa (TZS)</label><input type="number" id="productBasePrice" readonly></div>
+                        <div class="form-group"><label>Bei Anayotoa Mteja (TZS)</label><input type="number" id="customerPrice" oninput="validateCustomerPrice()" placeholder="0"></div>
+                    </div>
                     <div id="priceValidationMsg"></div>
-                    <input type="number" id="quantity" value="1" min="1" oninput="calculateTotal()" style="width:100%; padding:10px; margin-bottom:10px;">
-                    <input type="number" id="totalAmount" readonly style="width:100%; padding:10px; margin-bottom:10px;">
-                    <input type="number" id="profitAmount" readonly style="width:100%; padding:10px; margin-bottom:10px;">
-                    <select id="paymentMethod" style="width:100%; padding:10px; margin-bottom:10px;"><option value="cash">Cash</option><option value="mpesa">M-Pesa</option></select>
+                    <div class="form-row">
+                        <div class="form-group"><label>Idadi</label><input type="number" id="quantity" value="1" min="1" oninput="calculateTotal()"></div>
+                        <div class="form-group"><label>Jumla (TZS)</label><input type="number" id="totalAmount" readonly></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Faida ya Mauzo (TZS)</label><input type="number" id="profitAmount" readonly style="background:#e8f5e9; color:#2e7d32; font-weight:bold;"></div>
+                        <div class="form-group"><label>Njia ya Malipo</label><select id="paymentMethod"><option value="cash">💵 Cash</option><option value="mpesa">📱 M-Pesa</option><option value="tigo_pesa">📱 Tigo Pesa</option><option value="airtel_money">📱 Airtel Money</option></select></div>
+                    </div>
                     <button id="saleButton" onclick="recordSale()" class="btn-primary" disabled>Rekodi Mauzo</button>
                 </div>
             </div>
 
+            <!-- Stock Tab -->
             <div id="stockTab" class="tab-content">
-                <div class="card"><h3>⚠️ Bidhaa Zinazoisha</h3><div id="lowStockList"></div></div>
-                <div class="card"><h3>➕ Ongeza Stock</h3>
-                    <select id="stockCategory" onchange="loadProductsForStock()" style="width:100%; padding:10px; margin-bottom:10px;"><option value="">Chagua Category</option></select>
-                    <select id="stockProduct" style="width:100%; padding:10px; margin-bottom:10px;"></select>
-                    <input type="number" id="addStockQty" placeholder="Kiasi" style="width:100%; padding:10px; margin-bottom:10px;">
-                    <button onclick="addStock()" class="btn-primary">Ongeza Stock</button>
-                    <div id="stockAddSuccess" class="success"></div>
-                </div>
-                <div class="card"><h3>📊 Muhtasari wa Stock</h3><div id="stockSummary"></div></div>
-            </div>
-
-            <div id="usersTab" class="tab-content admin-only">
+                <div class="card"><h3>⚠️ Bidhaa Zinazoisha (Low Stock Alert)</h3><div id="lowStockList"></div></div>
                 <div class="card">
-                    <h3>➕ Ongeza Mfanyakazi</h3>
-                    <input type="text" id="userName" placeholder="Jina" style="width:100%; padding:10px; margin-bottom:10px;">
-                    <input type="email" id="userEmail" placeholder="Email" style="width:100%; padding:10px; margin-bottom:10px;">
-                    <input type="text" id="userPhone" placeholder="Simu" style="width:100%; padding:10px; margin-bottom:10px;">
-                    <select id="userRole" style="width:100%; padding:10px; margin-bottom:10px;"><option value="cashier">Cashier</option><option value="admin">Admin</option></select>
-                    <input type="password" id="userPassword" placeholder="Password" style="width:100%; padding:10px; margin-bottom:10px;">
-                    <button onclick="createUser()" class="btn-primary">Ongeza Mfanyakazi</button>
-                    <div id="userSuccess" class="success"></div>
+                    <h3>➕ Ongeza Stock</h3>
+                    <div id="stockAddSuccess" class="success"></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Category</label><select id="stockCategory" onchange="loadProductsForStock()"><option value="">Chagua Category</option></select></div>
+                        <div class="form-group"><label>Bidhaa</label><select id="stockProduct"></select></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Kiasi cha Kuongeza</label><input type="number" id="addStockQty" placeholder="Kiasi cha kuongeza"></div>
+                        <div class="form-group"><label>Bei Mpya ya Kuuza (Si lazima)</label><input type="number" id="newPrice" placeholder="Acha tupu kama haibadiliki"></div>
+                    </div>
+                    <button onclick="addStock()" class="btn-primary">Ongeza Stock</button>
                 </div>
-                <div class="card"><h3>📋 Orodha ya Wafanyakazi</h3><div id="usersList"></div></div>
+                <div class="card"><h3>📊 Muhtasari wa Stock na Faida</h3><div id="stockSummary"></div></div>
             </div>
         </div>
     </div>
 
+    <!-- Receipt Modal -->
     <div id="receiptModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeReceipt()">&times;</span>
             <div id="receiptContent"></div>
-            <button onclick="printReceipt()" class="btn-primary">Chapisha</button>
-            <button onclick="sendSMSReceipt()" class="btn-success">Tuma SMS</button>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button onclick="printReceipt()" class="btn-primary">🖨️ Chapisha Risiti</button>
+                <button onclick="sendSMSReceipt()" class="btn-success">📱 Tuma SMS kwa Mteja</button>
+            </div>
         </div>
     </div>
 
     <script>
+        // Data variables
         let products = JSON.parse(localStorage.getItem('products')) || [];
         let categories = JSON.parse(localStorage.getItem('categories')) || ['Vyakula', 'Dawa', 'Nguo', 'Vifaa', 'Vinywaji', 'Vipodozi', 'Electronics'];
         let customers = JSON.parse(localStorage.getItem('customers')) || [];
         let sales = JSON.parse(localStorage.getItem('sales')) || [];
-        let users = JSON.parse(localStorage.getItem('users')) || [];
         let lastReceipt = null;
         const STORE_PHONE = '0763387403';
 
@@ -221,28 +245,26 @@
             localStorage.setItem('categories', JSON.stringify(categories));
             localStorage.setItem('customers', JSON.stringify(customers));
             localStorage.setItem('sales', JSON.stringify(sales));
-            localStorage.setItem('users', JSON.stringify(users));
         }
 
         function login() {
-            var username = document.getElementById('username').value;
-            var password = document.getElementById('password').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
             if (username === 'admin' && password === 'admin123') {
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
+                document.getElementById('userName').innerHTML = 'Admin';
+                document.getElementById('userRole').innerHTML = 'Admin';
                 loadDashboard();
                 loadCategories();
                 displayProducts();
                 displayCustomers();
                 checkLowStock();
                 loadStockSummary();
-                loadDashboardSummary();
-                loadTopProducts();
-                loadUsers();
             } else {
                 document.getElementById('loginError').innerHTML = 'Username au password si sahihi!';
                 document.getElementById('loginError').style.display = 'block';
-                setTimeout(function() {
+                setTimeout(() => {
                     document.getElementById('loginError').style.display = 'none';
                 }, 3000);
             }
@@ -253,145 +275,138 @@
             document.getElementById('dashboard').style.display = 'none';
         }
 
-        function loadDashboardSummary() {
-            var today = new Date().toDateString();
-            var todaySales = sales.filter(function(s) { return new Date(s.date).toDateString() === today; });
-            var revenue = todaySales.reduce(function(sum, s) { return sum + s.total; }, 0);
-            var profit = todaySales.reduce(function(sum, s) { return sum + (s.profit || 0); }, 0);
+        function loadDashboard() {
+            const today = new Date().toDateString();
+            const todaySales = sales.filter(s => new Date(s.date).toDateString() === today);
+            const revenue = todaySales.reduce((sum, s) => sum + s.total, 0);
+            const profit = todaySales.reduce((sum, s) => sum + (s.profit || 0), 0);
             document.getElementById('todayRevenue').innerText = revenue.toLocaleString();
             document.getElementById('todayProfit').innerText = profit.toLocaleString();
-            var stockValue = products.reduce(function(sum, p) { return sum + (p.stock * p.sellingPrice); }, 0);
+            const stockValue = products.reduce((sum, p) => sum + (p.stock * p.sellingPrice), 0);
             document.getElementById('stockValue').innerText = stockValue.toLocaleString();
-            var totalCost = products.reduce(function(sum, p) { return sum + (p.stock * (p.costPrice || 0)); }, 0);
+            const totalCost = products.reduce((sum, p) => sum + (p.stock * (p.costPrice || 0)), 0);
             document.getElementById('expectedProfit').innerText = (stockValue - totalCost).toLocaleString();
-            document.getElementById('lowStockCount').innerText = products.filter(function(p) { return p.stock <= p.alertLevel; }).length;
-            document.getElementById('dashboardSummary').innerHTML = '<p><strong>Jumla ya Bidhaa:</strong> ' + products.length + '</p><p><strong>Jumla ya Wateja:</strong> ' + customers.length + '</p><p><strong>Mauzo Yote:</strong> ' + sales.reduce(function(sum, s) { return sum + s.total; }, 0).toLocaleString() + ' TZS</p><p><strong>Faida Yote:</strong> ' + sales.reduce(function(sum, s) { return sum + (s.profit || 0); }, 0).toLocaleString() + ' TZS</p>';
+            document.getElementById('lowStockCount').innerText = products.filter(p => p.stock <= p.alertLevel).length;
         }
 
-        function loadTopProducts() {
-            var productSales = {};
-            sales.forEach(function(sale) {
-                sale.items.forEach(function(item) {
-                    if (!productSales[item.productName]) productSales[item.productName] = 0;
-                    productSales[item.productName] += item.quantity;
-                });
-            });
-            var sorted = Object.entries(productSales).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 5);
-            if (sorted.length === 0) {
-                document.getElementById('topProducts').innerHTML = '<p>Hakuna data ya bidhaa zinazouzwa.</p>';
-                return;
-            }
-            var html = '</table><thead><tr><th>Bidhaa</th><th>Kiasi</th></tr></thead><tbody>';
-            sorted.forEach(function(item) {
-                html += '<tr><td><strong>' + item[0] + '</strong></td><td>' + item[1] + '</td></tr>';
-            });
-            html += '</tbody></table>';
-            document.getElementById('topProducts').innerHTML = html;
-        }
-
+        // Categories Functions
         function loadCategories() {
-            var container = document.getElementById('categoriesList');
-            var categorySelect = document.getElementById('categorySelect');
-            var filterSelect = document.getElementById('filterCategory');
-            var saleCategory = document.getElementById('saleCategory');
-            var stockCategory = document.getElementById('stockCategory');
+            const container = document.getElementById('categoriesList');
+            const categorySelect = document.getElementById('categorySelect');
+            const filterSelect = document.getElementById('filterCategory');
+            const saleCategory = document.getElementById('saleCategory');
+            const stockCategory = document.getElementById('stockCategory');
+            
             if (categories.length === 0) {
-                container.innerHTML = '<p>Hakuna categories.</p>';
+                container.innerHTML = '<p>Hakuna categories. Ongeza category kwanza.</p>';
                 return;
             }
-            var html = '<table><thead><td><th>Jina</th><th>Kitendo</th></tr></thead><tbody>';
-            var options = '<option value="">Chagua Category</option>';
-            for (var i = 0; i < categories.length; i++) {
-                html += '<tr><td><strong>' + categories[i] + '</strong></td><td><button onclick="deleteCategory(' + i + ')" class="btn-danger">Futa</button></td></tr>';
-                options += '<option value="' + categories[i] + '">' + categories[i] + '</option>';
-            }
+            
+            let html = '<table><thead><tr><th>Jina la Category</th><th>Kitendo</th></tr></thead><tbody>';
+            let options = '<option value="">Chagua Category</option>';
+            
+            categories.forEach((cat, idx) => {
+                html += `<tr>
+                    <td><strong>📁 ${cat}</strong></td>
+                    <td><button onclick="deleteCategory(${idx})" class="btn-danger">🗑️ Futa</button></td>
+                </tr>`;
+                options += `<option value="${cat}">${cat}</option>`;
+            });
             html += '</tbody></table>';
             container.innerHTML = html;
+            
             categorySelect.innerHTML = options;
-            filterSelect.innerHTML = '<option value="all">Zote</option>' + options;
+            filterSelect.innerHTML = '<option value="all">Category Zote</option>' + options;
             saleCategory.innerHTML = '<option value="">Chagua Category</option>' + options;
             stockCategory.innerHTML = '<option value="">Chagua Category</option>' + options;
         }
 
         function addCategory() {
-            var name = document.getElementById('newCategoryName').value.trim();
-            if (!name) { alert('Weka jina'); return; }
-            if (categories.includes(name)) { alert('Ipo tayari'); return; }
+            const name = document.getElementById('newCategoryName').value.trim();
+            if (!name) return alert('Weka jina la category');
+            if (categories.includes(name)) return alert('Category ipo tayari');
             categories.push(name);
             saveData();
             loadCategories();
             document.getElementById('newCategoryName').value = '';
-            document.getElementById('categorySuccess').innerHTML = '✅ Category imeongezwa!';
-            document.getElementById('categorySuccess').style.display = 'block';
-            setTimeout(function() { document.getElementById('categorySuccess').style.display = 'none'; }, 2000);
+            showSuccess('categorySuccess', '✅ Category imeongezwa!');
         }
 
         function deleteCategory(idx) {
-            if (confirm('Futa category hii?')) {
+            if (confirm(`Futa category "${categories[idx]}"?`)) {
                 categories.splice(idx, 1);
-                products = products.filter(function(p) { return p.category !== categories[idx]; });
                 saveData();
                 loadCategories();
                 displayProducts();
+                loadDashboard();
             }
         }
 
+        // Products Functions
         function generateSKU() {
-            var name = document.getElementById('productName').value;
-            if (name) {
-                document.getElementById('productSku').value = name.substring(0, 3).toUpperCase() + '-' + Math.floor(Math.random() * 10000);
-            }
+            const name = document.getElementById('productName').value;
+            if (name) document.getElementById('productSku').value = name.substring(0, 3).toUpperCase() + '-' + Math.floor(Math.random() * 10000);
         }
         document.getElementById('productName')?.addEventListener('input', generateSKU);
 
         function createProduct() {
-            var name = document.getElementById('productName').value.trim();
-            var sku = document.getElementById('productSku').value;
-            var category = document.getElementById('categorySelect').value;
-            var stock = parseInt(document.getElementById('productStock').value) || 0;
-            var costPrice = parseFloat(document.getElementById('costPrice').value) || 0;
-            var sellingPrice = parseFloat(document.getElementById('sellingPrice').value) || 0;
-            var alertLevel = parseInt(document.getElementById('alertLevel').value) || 10;
-            if (!name) { alert('Jaza jina'); return; }
-            if (!sellingPrice) { alert('Weka bei'); return; }
-            if (costPrice >= sellingPrice) { alert('Bei ya kununulia haiwezi kuwa kubwa'); return; }
-            if (!category) { alert('Chagua category'); return; }
-            products.push({ id: Date.now(), name: name, sku: sku, category: category, stock: stock, costPrice: costPrice, sellingPrice: sellingPrice, alertLevel: alertLevel });
+            const name = document.getElementById('productName').value.trim();
+            const sku = document.getElementById('productSku').value;
+            const category = document.getElementById('categorySelect').value;
+            const stock = parseInt(document.getElementById('productStock').value) || 0;
+            const costPrice = parseFloat(document.getElementById('costPrice').value) || 0;
+            const sellingPrice = parseFloat(document.getElementById('sellingPrice').value) || 0;
+            const alertLevel = parseInt(document.getElementById('alertLevel').value) || 10;
+            
+            if (!name) return alert('Jaza jina la bidhaa');
+            if (!sellingPrice) return alert('Weka bei ya kuuza');
+            if (costPrice >= sellingPrice) return alert('Bei ya kununulia haiwezi kuwa kubwa au sawa na bei ya kuuza!');
+            if (!category) return alert('Chagua category');
+            
+            products.push({ id: Date.now(), name, sku, category, stock, costPrice, sellingPrice, alertLevel });
             saveData();
-            alert('Bidhaa imeongezwa!');
+            showSuccess('productSuccess', '✅ Bidhaa imeongezwa!');
             document.getElementById('productName').value = '';
             document.getElementById('productSku').value = '';
             document.getElementById('productStock').value = '0';
             document.getElementById('costPrice').value = '';
             document.getElementById('sellingPrice').value = '';
             displayProducts();
-            loadDashboardSummary();
+            loadDashboard();
             checkLowStock();
             loadStockSummary();
         }
 
         function displayProducts() {
-            var filter = document.getElementById('filterCategory').value;
-            var filtered = filter === 'all' ? products : products.filter(function(p) { return p.category === filter; });
-            var container = document.getElementById('productsList');
+            const filter = document.getElementById('filterCategory').value;
+            const filtered = filter === 'all' ? products : products.filter(p => p.category === filter);
+            const container = document.getElementById('productsList');
             if (filtered.length === 0) { container.innerHTML = '<p>Hakuna bidhaa</p>'; return; }
-            var html = '<tr><thead><tr><th>Jina</th><th>SKU</th><th>Category</th><th>Cost</th><th>Price</th><th>Stock</th><th>Action</th></tr></thead><tbody>';
-            for (var i = 0; i < filtered.length; i++) {
-                var p = filtered[i];
-                var isLow = p.stock <= p.alertLevel;
-                html += '<tr><td><strong>' + p.name + '</strong></td><td>' + p.sku + '</td><td>' + p.category + '</td><td>' + (p.costPrice || 0).toLocaleString() + '</td><td>' + p.sellingPrice.toLocaleString() + '</td><td class="' + (isLow ? 'low-stock' : '') + '">' + p.stock + '</td>';
-                html += '<td><button onclick="editProduct(' + p.id + ')" class="btn-warning">Bei</button> <button onclick="deleteProduct(' + p.id + ')" class="btn-danger">Futa</button></td></tr>';
-            }
-            html += '</tbody></table>';
+            let html = '<table><thead><tr><th>Jina</th><th>SKU</th><th>Category</th><th>Cost</th><th>Price</th><th>Stock</th><th>Status</th><th>Action</th></tr></thead><tbody>';
+            filtered.forEach(p => {
+                const isLow = p.stock <= p.alertLevel;
+                html += `<tr>
+                    <td><strong>${p.name}</strong></td>
+                    <td>${p.sku}</td>
+                    <td>${p.category}</td>
+                    <td>TZS ${(p.costPrice || 0).toLocaleString()}</td>
+                    <td>TZS ${p.sellingPrice.toLocaleString()}</td>
+                    <td class="${isLow ? 'low-stock' : ''}">${p.stock} ${isLow ? '⚠️' : ''}</td>
+                    <td>${isLow ? '<span class="low-stock">Low Stock</span>' : 'In Stock'}</td>
+                    <td><button onclick="editProduct(${p.id})" class="btn-warning">✏️ Bei</button>
+                    <button onclick="deleteProduct(${p.id})" class="btn-danger">🗑️</button></td>
+                </tr>`;
+            });
+            html += '</tbody></tr>';
             container.innerHTML = html;
         }
 
         function editProduct(id) {
-            var product = products.find(function(p) { return p.id === id; });
+            const product = products.find(p => p.id === id);
             if (!product) return;
-            var newPrice = prompt('Bei mpya ya kuuza:', product.sellingPrice);
+            const newPrice = prompt('Ingiza bei mpya ya kuuza (TZS):', product.sellingPrice);
             if (newPrice && parseFloat(newPrice) !== product.sellingPrice) {
-                if (parseFloat(newPrice) < product.costPrice) { alert('Bei haiwezi kuwa chini ya cost!'); return; }
+                if (parseFloat(newPrice) < product.costPrice) return alert('Bei mpya haiwezi kuwa chini ya bei ya kununulia!');
                 product.sellingPrice = parseFloat(newPrice);
                 saveData();
                 displayProducts();
@@ -401,79 +416,85 @@
 
         function deleteProduct(id) {
             if (confirm('Futa bidhaa hii?')) {
-                products = products.filter(function(p) { return p.id !== id; });
+                products = products.filter(p => p.id !== id);
                 saveData();
                 displayProducts();
-                loadDashboardSummary();
+                loadDashboard();
                 checkLowStock();
                 loadStockSummary();
             }
         }
 
+        // Customers Functions
         function displayCustomers() {
-            var container = document.getElementById('customersList');
-            if (customers.length === 0) { container.innerHTML = '<p>Hakuna wateja</p>'; return; }
-            var html = '<table><thead><tr><th>Jina</th><th>Simu</th><th>Email</th><th>Anwani</th><th>Action</th></tr></thead><tbody>';
-            for (var i = 0; i < customers.length; i++) {
-                var c = customers[i];
-                html += '<tr><td><strong>' + c.name + '</strong></td><td>' + (c.phone || '-') + '</td><td>' + (c.email || '-') + '</td><td>' + (c.address || '-') + '</td><td><button onclick="deleteCustomer(' + i + ')" class="btn-danger">Futa</button></td></tr>';
-            }
+            const container = document.getElementById('customersList');
+            if (customers.length === 0) { container.innerHTML = '<p>Hakuna wateja. Ongeza mteja kwanza.</p>'; return; }
+            let html = '<tr><thead><tr><th>Jina</th><th>Simu</th><th>Email</th><th>Anwani</th><th>Action</th></tr></thead><tbody>';
+            customers.forEach((c, idx) => {
+                html += `<tr>
+                    <td><strong>${c.name}</strong></td>
+                    <td>${c.phone || '-'}</td>
+                    <td>${c.email || '-'}</td>
+                    <td>${c.address || '-'}</td>
+                    <td><button onclick="deleteCustomer(${idx})" class="btn-danger">🗑️ Futa</button></td>
+                </tr>`;
+            });
             html += '</tbody></table>';
             container.innerHTML = html;
-            var saleSelect = document.getElementById('saleCustomerSelect');
-            var options = '<option value="">Mteja wa Kawaida</option>';
-            for (var j = 0; j < customers.length; j++) {
-                options += '<option value="' + customers[j].name + '" data-phone="' + (customers[j].phone || '') + '">' + customers[j].name + ' - ' + (customers[j].phone || '') + '</option>';
-            }
+            
+            const saleSelect = document.getElementById('saleCustomerSelect');
+            let options = '<option value="">Mteja wa Kawaida</option>';
+            customers.forEach(c => { options += `<option value="${c.name}" data-phone="${c.phone || ''}">${c.name} - ${c.phone || ''}</option>`; });
             saleSelect.innerHTML = options;
+            
             saleSelect.onchange = function() {
-                var opt = this.options[this.selectedIndex];
-                var phoneInput = document.getElementById('saleCustomerPhone');
-                if (phoneInput) phoneInput.value = opt?.dataset?.phone || '';
+                const opt = this.options[this.selectedIndex];
+                const phoneInput = document.getElementById('saleCustomerPhone');
+                if (phoneInput) {
+                    phoneInput.value = opt?.dataset?.phone || '';
+                }
             };
         }
 
         function addCustomer() {
-            var name = document.getElementById('customerName').value.trim();
-            var phone = document.getElementById('customerPhone').value.trim();
-            var email = document.getElementById('customerEmail').value.trim();
-            var address = document.getElementById('customerAddress').value.trim();
-            if (!name) { alert('Weka jina'); return; }
-            customers.push({ id: Date.now(), name: name, phone: phone, email: email, address: address });
+            const name = document.getElementById('customerName').value.trim();
+            const phone = document.getElementById('customerPhone').value.trim();
+            const email = document.getElementById('customerEmail').value.trim();
+            const address = document.getElementById('customerAddress').value.trim();
+            if (!name) return alert('Weka jina la mteja');
+            customers.push({ id: Date.now(), name, phone, email, address });
             saveData();
-            alert('Mteja ameongezwa!');
+            showSuccess('customerSuccess', '✅ Mteja ameongezwa!');
             document.getElementById('customerName').value = '';
             document.getElementById('customerPhone').value = '';
             document.getElementById('customerEmail').value = '';
             document.getElementById('customerAddress').value = '';
             displayCustomers();
-            loadDashboardSummary();
+            loadDashboard();
         }
 
         function deleteCustomer(idx) {
-            if (confirm('Futa mteja huyu?')) {
+            if (confirm(`Futa mteja "${customers[idx].name}"?`)) {
                 customers.splice(idx, 1);
                 saveData();
                 displayCustomers();
+                loadDashboard();
             }
         }
 
+        // Sales Functions
         function loadProductsForSale() {
-            var category = document.getElementById('saleCategory').value;
-            var select = document.getElementById('saleProduct');
-            if (!category) { select.innerHTML = '<option>Chagua Category</option>'; return; }
-            var filtered = products.filter(function(p) { return p.category === category && p.stock > 0; });
-            if (filtered.length === 0) { select.innerHTML = '<option>Hakuna bidhaa</option>'; return; }
-            var html = '<option value="">Chagua Bidhaa</option>';
-            for (var i = 0; i < filtered.length; i++) {
-                html += '<option value="' + filtered[i].id + '" data-price="' + filtered[i].sellingPrice + '" data-cost="' + filtered[i].costPrice + '" data-name="' + filtered[i].name + '">' + filtered[i].name + ' - ' + filtered[i].sellingPrice + ' TZS</option>';
-            }
-            select.innerHTML = html;
+            const category = document.getElementById('saleCategory').value;
+            const select = document.getElementById('saleProduct');
+            if (!category) { select.innerHTML = '<option value="">Chagua Category kwanza</option>'; return; }
+            const filtered = products.filter(p => p.category === category && p.stock > 0);
+            if (filtered.length === 0) { select.innerHTML = '<option value="">Hakuna bidhaa katika category hii</option>'; return; }
+            select.innerHTML = '<option value="">Chagua Bidhaa</option>' + filtered.map(p => `<option value="${p.id}" data-price="${p.sellingPrice}" data-cost="${p.costPrice}" data-name="${p.name}" data-stock="${p.stock}">${p.name} - TZS ${p.sellingPrice.toLocaleString()} (Stock: ${p.stock})</option>`).join('');
         }
 
         function updateSaleInfo() {
-            var select = document.getElementById('saleProduct');
-            var opt = select.options[select.selectedIndex];
+            const select = document.getElementById('saleProduct');
+            const opt = select.options[select.selectedIndex];
             document.getElementById('productBasePrice').value = opt?.dataset?.price || 0;
             document.getElementById('customerPrice').value = '';
             document.getElementById('priceValidationMsg').innerHTML = '';
@@ -483,15 +504,15 @@
         }
 
         function validateCustomerPrice() {
-            var base = parseFloat(document.getElementById('productBasePrice').value) || 0;
-            var customer = parseFloat(document.getElementById('customerPrice').value) || 0;
-            var msgDiv = document.getElementById('priceValidationMsg');
-            if (customer === 0) {
-                msgDiv.innerHTML = '<span class="price-low">⚠️ Ingiza bei</span>';
+            const basePrice = parseFloat(document.getElementById('productBasePrice').value) || 0;
+            const customerPrice = parseFloat(document.getElementById('customerPrice').value) || 0;
+            const msgDiv = document.getElementById('priceValidationMsg');
+            if (customerPrice === 0) {
+                msgDiv.innerHTML = '<span class="price-low">⚠️ Ingiza bei ya mteja</span>';
                 document.getElementById('saleButton').disabled = true;
                 return;
             }
-            if (customer < base) {
+            if (customerPrice < basePrice) {
                 msgDiv.innerHTML = '<span class="price-low">❌ Bei ipo CHINI! Hauwezi kuuza.</span>';
                 document.getElementById('saleButton').disabled = true;
             } else {
@@ -502,110 +523,121 @@
         }
 
         function calculateTotal() {
-            var customer = parseFloat(document.getElementById('customerPrice').value) || 0;
-            var qty = parseInt(document.getElementById('quantity').value) || 0;
-            var select = document.getElementById('saleProduct');
-            var opt = select.options[select.selectedIndex];
-            var cost = parseFloat(opt?.dataset?.cost || 0);
-            var total = customer * qty;
-            var profit = (customer - cost) * qty;
-            document.getElementById('totalAmount').value = total;
-            document.getElementById('profitAmount').value = profit;
+            const customerPrice = parseFloat(document.getElementById('customerPrice').value) || 0;
+            const qty = parseInt(document.getElementById('quantity').value) || 0;
+            const select = document.getElementById('saleProduct');
+            const opt = select.options[select.selectedIndex];
+            const cost = parseFloat(opt?.dataset?.cost || 0);
+            const total = customerPrice * qty;
+            const profit = (customerPrice - cost) * qty;
+            document.getElementById('totalAmount').value = total.toLocaleString();
+            document.getElementById('profitAmount').value = profit.toLocaleString();
         }
 
-        function recordSale() {
-            var select = document.getElementById('saleProduct');
-            var productId = parseInt(select.value);
-            var product = products.find(function(p) { return p.id === productId; });
-            if (!product) { alert('Chagua bidhaa'); return; }
-            var qty = parseInt(document.getElementById('quantity').value);
-            var customerPrice = parseFloat(document.getElementById('customerPrice').value);
-            var total = customerPrice * qty;
-            var paymentMethod = document.getElementById('paymentMethod').value;
-            var customerSelect = document.getElementById('saleCustomerSelect');
-            var selectedOption = customerSelect.options[customerSelect.selectedIndex];
-            var customerName = selectedOption?.value === '' ? 'Mteja wa Kawaida' : (selectedOption?.text.split(' - ')[0] || 'Mteja');
-            var customerPhone = document.getElementById('saleCustomerPhone').value;
-            if (customerPrice < product.costPrice) { alert('Bei ipo chini!'); return; }
-            if (product.stock < qty) { alert('Stock haitoshi!'); return; }
-            var profit = (customerPrice - product.costPrice) * qty;
+        async function recordSale() {
+            const select = document.getElementById('saleProduct');
+            const productId = parseInt(select.value);
+            const product = products.find(p => p.id === productId);
+            if (!product) return alert('Chagua bidhaa');
+            const qty = parseInt(document.getElementById('quantity').value);
+            const customerPrice = parseFloat(document.getElementById('customerPrice').value);
+            const total = customerPrice * qty;
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            const customerSelect = document.getElementById('saleCustomerSelect');
+            const selectedOption = customerSelect.options[customerSelect.selectedIndex];
+            const customerName = selectedOption?.value === '' ? 'Mteja wa Kawaida' : (selectedOption?.text.split(' - ')[0] || 'Mteja');
+            const customerPhone = document.getElementById('saleCustomerPhone').value;
+            
+            if (customerPrice < product.costPrice) return alert('Bei ya mteja ipo chini ya bei ya kununulia!');
+            if (product.stock < qty) return alert(`Stock haitoshi! Zipo ${product.stock} tu.`);
+            
+            const profit = (customerPrice - product.costPrice) * qty;
             product.stock -= qty;
-            var invoice = 'INV-' + Date.now();
-            var saleRecord = { id: Date.now(), invoice: invoice, customerName: customerName, customerPhone: customerPhone, items: [{ productName: product.name, quantity: qty, price: customerPrice, total: total }], total: total, profit: profit, payment: paymentMethod, date: new Date().toISOString() };
+            const invoice = 'INV-' + Date.now();
+            const saleRecord = { id: Date.now(), invoice, customerName, customerPhone, items: [{ productName: product.name, quantity: qty, price: customerPrice, total }], total, profit, payment: paymentMethod, date: new Date().toISOString() };
             sales.push(saleRecord);
             saveData();
             lastReceipt = saleRecord;
-            alert('Mauzo yamerekodiwa! Invoice: ' + invoice + ' | Faida: ' + profit.toLocaleString() + ' TZS');
+            
+            showSuccess('saleSuccess', `✅ Mauzo yamerekodiwa! Invoice: ${invoice} | Faida: TZS ${profit.toLocaleString()}`);
+            
             document.getElementById('quantity').value = 1;
             document.getElementById('customerPrice').value = '';
             document.getElementById('priceValidationMsg').innerHTML = '';
             document.getElementById('saleButton').disabled = true;
+            
             displayProducts();
-            loadDashboardSummary();
+            loadDashboard();
             checkLowStock();
             loadStockSummary();
-            loadTopProducts();
             showReceipt(saleRecord);
+            
             if (customerPhone && customerPhone.trim() !== '') {
-                alert('📱 SMS imetumwa kwa ' + customerPhone);
+                alert(`📱 SMS imetumwa kwa ${customerPhone}\n\nInvoice: ${invoice}\nTotal: TZS ${total.toLocaleString()}`);
             }
         }
 
+        // Stock Functions
         function checkLowStock() {
-            var low = products.filter(function(p) { return p.stock <= p.alertLevel; });
+            const low = products.filter(p => p.stock <= p.alertLevel);
             document.getElementById('lowStockCount').innerText = low.length;
-            var div = document.getElementById('lowStockList');
-            if (low.length === 0) { div.innerHTML = '<p>✅ Hakuna bidhaa zinazoisha</p>'; return; }
-            var html = '<td><thead><tr><th>Bidhaa</th><th>Stock</th><th>Alert</th><th>Action</th></tr></thead><tbody>';
-            for (var i = 0; i < low.length; i++) {
-                html += '<tr><td><strong>' + low[i].name + '</strong></td><td class="low-stock">' + low[i].stock + ' tu</td><td>' + low[i].alertLevel + '</td><td><button onclick="quickAddStock(' + low[i].id + ')" class="btn-warning">Ongeza</button></td></tr>';
+            const div = document.getElementById('lowStockList');
+            if (low.length === 0) div.innerHTML = '<p>✅ Hakuna bidhaa zinazoisha</p>';
+            else {
+                let html = '<table><thead><tr><th>Bidhaa</th><th>Stock</th><th>Alert Level</th><th>Action</th></tr></thead><tbody>';
+                low.forEach(p => {
+                    html += `<tr>
+                        <td><strong>${p.name}</strong></td>
+                        <td class="low-stock">${p.stock} tu</td>
+                        <td>${p.alertLevel}</td>
+                        <td><button onclick="quickAddStock(${p.id})" class="btn-warning">➕ Ongeza Stock</button></td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+                div.innerHTML = html;
             }
-            html += '</tbody></table>';
-            div.innerHTML = html;
         }
 
-        function quickAddStock(id) {
-            var qty = prompt('Kiasi cha kuongeza:');
-            if (qty && parseInt(qty) > 0) {
-                var p = products.find(function(prod) { return prod.id === id; });
-                if (p) {
-                    p.stock += parseInt(qty);
-                    saveData();
-                    displayProducts();
-                    checkLowStock();
-                    loadStockSummary();
-                    alert('Stock imeongezeka!');
-                }
+        function quickAddStock(id) { 
+            const qty = prompt('Kiasi cha kuongeza stock:'); 
+            if(qty && parseInt(qty) > 0) addStockToProduct(id, parseInt(qty)); 
+        }
+        
+        function addStockToProduct(id, qty) {
+            const p = products.find(p => p.id === id);
+            if(p) { 
+                p.stock += qty; 
+                saveData(); 
+                displayProducts(); 
+                checkLowStock(); 
+                loadStockSummary(); 
+                alert(`✅ Stock imeongezeka! Sasa stock: ${p.stock}`); 
             }
         }
 
         function loadProductsForStock() {
-            var cat = document.getElementById('stockCategory').value;
-            var select = document.getElementById('stockProduct');
-            if (!cat) { select.innerHTML = '<option>Chagua Category</option>'; return; }
-            var filtered = products.filter(function(p) { return p.category === cat; });
-            if (filtered.length === 0) { select.innerHTML = '<option>Hakuna bidhaa</option>'; return; }
-            var html = '<option value="">Chagua Bidhaa</option>';
-            for (var i = 0; i < filtered.length; i++) {
-                html += '<option value="' + filtered[i].id + '">' + filtered[i].name + ' (Stock: ' + filtered[i].stock + ')</option>';
-            }
-            select.innerHTML = html;
+            const cat = document.getElementById('stockCategory').value;
+            const select = document.getElementById('stockProduct');
+            if (!cat) { select.innerHTML = '<option value="">Chagua Category kwanza</option>'; return; }
+            const filtered = products.filter(p => p.category === cat);
+            if (filtered.length === 0) { select.innerHTML = '<option value="">Hakuna bidhaa katika category hii</option>'; return; }
+            select.innerHTML = '<option value="">Chagua Bidhaa</option>' + filtered.map(p => `<option value="${p.id}">${p.name} (Stock: ${p.stock})</option>`).join('');
         }
 
         function addStock() {
-            var productId = parseInt(document.getElementById('stockProduct').value);
-            var product = products.find(function(p) { return p.id === productId; });
-            if (!product) { alert('Chagua bidhaa'); return; }
-            var qty = parseInt(document.getElementById('addStockQty').value);
-            if (!qty || qty <= 0) { alert('Weka kiasi'); return; }
+            const productId = parseInt(document.getElementById('stockProduct').value);
+            const product = products.find(p => p.id === productId);
+            if (!product) return alert('Chagua bidhaa');
+            const qty = parseInt(document.getElementById('addStockQty').value);
+            if (!qty || qty <= 0) return alert('Weka kiasi sahihi');
+            const newPrice = parseFloat(document.getElementById('newPrice').value);
             product.stock += qty;
-            var newPrice = parseFloat(document.getElementById('newPrice').value);
             if (newPrice && newPrice > 0) {
-                if (newPrice < product.costPrice) { alert('Bei haiwezi kuwa chini ya cost!'); return; }
+                if (newPrice < product.costPrice) return alert('Bei mpya haiwezi kuwa chini ya cost!');
                 product.sellingPrice = newPrice;
             }
             saveData();
-            alert('Stock imeongezeka! Sasa stock: ' + product.stock);
+            showSuccess('stockAddSuccess', `✅ Stock imeongezeka! Sasa stock: ${product.stock}`);
             document.getElementById('addStockQty').value = '';
             document.getElementById('newPrice').value = '';
             displayProducts();
@@ -614,89 +646,100 @@
         }
 
         function loadStockSummary() {
-            var totalValue = products.reduce(function(sum, p) { return sum + (p.stock * p.sellingPrice); }, 0);
-            var totalCost = products.reduce(function(sum, p) { return sum + (p.stock * (p.costPrice || 0)); }, 0);
-            var expectedProfit = totalValue - totalCost;
+            const totalValue = products.reduce((sum, p) => sum + (p.stock * p.sellingPrice), 0);
+            const totalCost = products.reduce((sum, p) => sum + (p.stock * (p.costPrice || 0)), 0);
+            const expectedProfit = totalValue - totalCost;
             document.getElementById('expectedProfit').innerText = expectedProfit.toLocaleString();
-            document.getElementById('stockSummary').innerHTML = '<p><strong>Jumla ya Bidhaa:</strong> ' + products.length + '</p><p><strong>Thamani ya Stock:</strong> ' + totalValue.toLocaleString() + ' TZS</p><p><strong>Gharama ya Stock:</strong> ' + totalCost.toLocaleString() + ' TZS</p><p><strong>💰 Faida Inayotarajiwa:</strong> ' + expectedProfit.toLocaleString() + ' TZS</p>';
+            document.getElementById('stockSummary').innerHTML = `
+                <p><strong>Jumla ya Bidhaa:</strong> ${products.length}</p>
+                <p><strong>Thamani ya Stock:</strong> TZS ${totalValue.toLocaleString()}</p>
+                <p><strong>Gharama ya Stock:</strong> TZS ${totalCost.toLocaleString()}</p>
+                <p><strong>💰 Makadirio ya Faida ya Stock Nzima:</strong> TZS ${expectedProfit.toLocaleString()}</p>
+                <p><strong>Faida Halisi kutoka kwa Mauzo Yote:</strong> TZS ${sales.reduce((sum, s) => sum + (s.profit || 0), 0).toLocaleString()}</p>
+            `;
         }
 
+        // Receipt Functions
         function showReceipt(sale) {
-            var now = new Date();
-            var itemsHtml = '';
-            for (var i = 0; i < sale.items.length; i++) {
-                itemsHtml += '<tr><td><strong>' + sale.items[i].productName + '</strong></td><td style="text-align:center;">' + sale.items[i].quantity + '</td><td style="text-align:right;">TZS ' + sale.items[i].price.toLocaleString() + '</td><td style="text-align:right;">TZS ' + sale.items[i].total.toLocaleString() + '</td></tr>';
-            }
-            document.getElementById('receiptContent').innerHTML = '<div style="text-align:center"><h2>🏪 SMART POS</h2><p>Shinyanga, Tanzania</p><p>Tel: ' + STORE_PHONE + '</p><hr><p><strong>Invoice:</strong> ' + sale.invoice + '</p><p><strong>Tarehe:</strong> ' + now.toLocaleString() + '</p><p><strong>Mteja:</strong> ' + sale.customerName + '</p>' + (sale.customerPhone ? '<p><strong>Simu:</strong> ' + sale.customerPhone + '</p>' : '') + '<hr><table style="width:100%"><thead><tr><th>Bidhaa</th><th>Idadi</th><th>Bei</th><th>Jumla</th></tr></thead><tbody>' + itemsHtml + '</tbody><tfoot><tr><td colspan="3"><strong>JUMLA:</strong></td><td><strong>TZS ' + sale.total.toLocaleString() + '</strong></td></tr></tfoot></table><hr><p>Asante kwa kununua!</p></div>';
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('sw-TZ');
+            const timeStr = now.toLocaleTimeString('sw-TZ');
+            document.getElementById('receiptContent').innerHTML = `
+                <div style="text-align:center; font-family:monospace;">
+                    <h2>🏪 SMART POS</h2>
+                    <h3>Shinyanga, Tanzania</h3>
+                    <p>Simu: ${STORE_PHONE}</p>
+                    <hr>
+                    <p><strong>RISITI YA MALIPO</strong></p>
+                    <hr>
+                    <p><strong>Invoice:</strong> ${sale.invoice}</p>
+                    <p><strong>Tarehe:</strong> ${dateStr} ${timeStr}</p>
+                    <p><strong>Mteja:</strong> ${sale.customerName}</p>
+                    ${sale.customerPhone ? `<p><strong>Simu:</strong> ${sale.customerPhone}</p>` : ''}
+                    <hr>
+                    <table style="width:100%"><thead><tr><th>Bidhaa</th><th>Idadi</th><th>Bei</th><th>Jumla</th></tr></thead>
+                    <tbody>${sale.items.map(i => `<tr>
+                        <td><strong>${i.productName}</strong></td>
+                        <td style="text-align:center;">${i.quantity}</td>
+                        <td style="text-align:right;">TZS ${i.price.toLocaleString()}</td>
+                        <td style="text-align:right;">TZS ${i.total.toLocaleString()}</td>
+                    </tr>`).join('')}</tbody>
+                    <tfoot><tr style="border-top:1px solid #000;"><td colspan="3"><strong>JUMLA:</strong></td><td style="text-align:right;"><strong>TZS ${sale.total.toLocaleString()}</strong></td></tr></tfoot>
+                    </table>
+                    <hr>
+                    <p><strong>Njia ya Malipo:</strong> ${sale.payment?.toUpperCase()}</p>
+                    <hr>
+                    <p>Asante kwa kununua SMART POS!</p>
+                    <p>Karibu tena</p>
+                </div>
+            `;
             document.getElementById('receiptModal').style.display = 'flex';
         }
 
         function closeReceipt() { document.getElementById('receiptModal').style.display = 'none'; }
-        function printReceipt() { var w = window.open('', '_blank'); w.document.write('<html><head><title>RISITI</title><style>body{font-family:monospace;padding:20px}</style></head><body>' + document.getElementById('receiptContent').innerHTML + '</body></html>'); w.print(); }
-        function sendSMSReceipt() { var phone = document.getElementById('saleCustomerPhone').value; if (phone && lastReceipt) alert('📱 SMS imetumwa kwa ' + phone); else alert('Hakuna namba'); }
-
-        function loadUsers() {
-            var container = document.getElementById('usersList');
-            if (users.length === 0) { container.innerHTML = '<p>Hakuna wafanyakazi</p>'; return; }
-            var html = '<table><thead><tr><th>Jina</th><th>Email</th><th>Simu</th><th>Nafasi</th><th>Action</th></tr></thead><tbody>';
-            for (var i = 0; i < users.length; i++) {
-                html += '<tr><td><strong>' + users[i].name + '</strong></td><td>' + users[i].email + '</td><td>' + (users[i].phone || '-') + '</td><td>' + (users[i].role === 'admin' ? 'Admin' : 'Cashier') + '</td><td><button onclick="deleteUser(' + i + ')" class="btn-danger">Futa</button></td></tr>';
-            }
-            html += '</tbody></table>';
-            container.innerHTML = html;
+        
+        function printReceipt() { 
+            const w = window.open('', '_blank'); 
+            w.document.write('<html><head><title>RISITI</title><style>body{font-family:monospace;padding:20px}</style></head><body>' + document.getElementById('receiptContent').innerHTML + '</body></html>'); 
+            w.print(); 
         }
-
-        function createUser() {
-            var name = document.getElementById('userName').value.trim();
-            var email = document.getElementById('userEmail').value.trim();
-            var phone = document.getElementById('userPhone').value.trim();
-            var role = document.getElementById('userRole').value;
-            var password = document.getElementById('userPassword').value;
-            if (!name) { alert('Jaza jina'); return; }
-            if (!email) { alert('Jaza email'); return; }
-            if (!password) { alert('Jaza password'); return; }
-            if (users.find(function(u) { return u.email === email; })) { alert('Email ipo tayari!'); return; }
-            users.push({ id: Date.now(), name: name, email: email, phone: phone, role: role, password: password });
-            saveData();
-            alert('Mfanyakazi ameongezwa!');
-            document.getElementById('userName').value = '';
-            document.getElementById('userEmail').value = '';
-            document.getElementById('userPhone').value = '';
-            document.getElementById('userPassword').value = '';
-            loadUsers();
-        }
-
-        function deleteUser(idx) {
-            if (confirm('Futa mfanyakazi huyu?')) {
-                users.splice(idx, 1);
-                saveData();
-                loadUsers();
+        
+        function sendSMSReceipt() { 
+            const phone = document.getElementById('saleCustomerPhone').value;
+            if (phone && phone.trim() !== '' && lastReceipt) {
+                alert(`📱 SMS imetumwa kwa ${phone}\n\nInvoice: ${lastReceipt.invoice}\nTotal: TZS ${lastReceipt.total.toLocaleString()}`);
+            } else if (!phone || phone.trim() === '') {
+                alert('⚠️ Tafadhali weka namba ya simu ya mteja!');
+            } else {
+                alert('Hakuna taarifa za mauzo');
             }
         }
 
-        function loadDashboard() { loadDashboardSummary(); loadTopProducts(); }
+        function showSuccess(id, msg) {
+            const el = document.getElementById(id);
+            el.innerHTML = msg;
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 3000);
+        }
 
         function showTab(tab) {
-            document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
-            document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
-            document.getElementById(tab + 'Tab').classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`${tab}Tab`).classList.add('active');
             event.target.classList.add('active');
             if (tab === 'stock') { checkLowStock(); loadStockSummary(); }
             if (tab === 'products') { displayProducts(); }
             if (tab === 'customers') { displayCustomers(); }
             if (tab === 'categories') { loadCategories(); }
-            if (tab === 'dashboard') { loadDashboardSummary(); loadTopProducts(); }
-            if (tab === 'users') { loadUsers(); }
         }
 
+        // Initialize
         loadCategories();
         displayProducts();
         displayCustomers();
-        loadDashboardSummary();
-        loadTopProducts();
+        loadDashboard();
         checkLowStock();
         loadStockSummary();
-        loadUsers();
     </script>
 </body>
 </html>

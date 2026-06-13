@@ -272,9 +272,13 @@
         }
 
         function login() {
+            console.log("Login button clicked"); // Debug
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
+            console.log("Username:", username, "Password:", password); // Debug
+            
             if (username === 'admin' && password === 'admin123') {
+                console.log("Login successful"); // Debug
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
                 document.getElementById('userName').innerHTML = 'Admin';
@@ -289,9 +293,12 @@
                 loadTopProducts();
                 loadUsers();
             } else {
+                console.log("Login failed"); // Debug
                 document.getElementById('loginError').innerHTML = 'Username au password si sahihi!';
                 document.getElementById('loginError').style.display = 'block';
-                setTimeout(() => document.getElementById('loginError').style.display = 'none', 3000);
+                setTimeout(() => {
+                    document.getElementById('loginError').style.display = 'none';
+                }, 3000);
             }
         }
 
@@ -337,7 +344,7 @@
                 document.getElementById('topProducts').innerHTML = '<p>Hakuna data ya bidhaa zinazouzwa.</p>';
                 return;
             }
-            let html = '<tr><thead><tr><th>Bidhaa</th><th>Kiasi Kilichouzwa</th></tr></thead><tbody>';
+            let html = '<table><thead><tr><th>Bidhaa</th><th>Kiasi Kilichouzwa</th></tr></thead><tbody>';
             sorted.forEach(([name, qty]) => { html += `<tr><td><strong>${name}</strong></td><td style="text-align:center;">${qty}</td></tr>`; });
             html += '</tbody></table>';
             document.getElementById('topProducts').innerHTML = html;
@@ -356,11 +363,14 @@
                 return;
             }
             
-            let html = '<table><thead><tr><th>Jina la Category</th><th>Kitendo</th></tr></thead><tbody>';
+            let html = '</table><thead><tr><th>Jina la Category</th><th>Kitendo</th></tr></thead><tbody>';
             let options = '<option value="">Chagua Category</option>';
             
             categories.forEach((cat, idx) => {
-                html += `<tr><td><strong>📁 ${cat}</strong></td><td><button onclick="deleteCategory(${idx})" class="btn-danger">🗑️ Futa</button></td></tr>`;
+                html += `<tr>
+                    <td><strong>📁 ${cat}</strong></td>
+                    <td><button onclick="deleteCategory(${idx})" class="btn-danger">🗑️ Futa</button></td>
+                </tr>`;
                 options += `<option value="${cat}">${cat}</option>`;
             });
             html += '</tbody></table>';
@@ -434,7 +444,7 @@
             const filtered = filter === 'all' ? products : products.filter(p => p.category === filter);
             const container = document.getElementById('productsList');
             if (filtered.length === 0) { container.innerHTML = '<p>Hakuna bidhaa</p>'; return; }
-            let html = '</table><thead><tr><th>Jina</th><th>SKU</th><th>Category</th><th>Bei ya Kununulia</th><th>Bei ya Kuuza</th><th>Stock</th><th>Faida/Unit</th><th>Action</th></tr></thead><tbody>';
+            let html = '<tr><thead><tr><th>Jina</th><th>SKU</th><th>Category</th><th>Bei ya Kununulia</th><th>Bei ya Kuuza</th><th>Stock</th><th>Faida/Unit</th><th>Action</th></tr></thead><tbody>';
             filtered.forEach(p => {
                 const isLow = p.stock <= p.alertLevel;
                 const profitPerUnit = p.sellingPrice - p.costPrice;
@@ -449,7 +459,7 @@
                     <td><button onclick="editProduct(${p.id})" class="btn-warning">✏️ Bei</button> <button onclick="deleteProduct(${p.id})" class="btn-danger">🗑️</button></td>
                 </tr>`;
             });
-            html += '</tbody></table>';
+            html += '</tbody></tr>';
             container.innerHTML = html;
         }
 
@@ -481,7 +491,7 @@
         function displayCustomers() {
             const container = document.getElementById('customersList');
             if (customers.length === 0) { container.innerHTML = '<p>Hakuna wateja. Ongeza mteja kwanza.</p>'; return; }
-            let html = '<tr><thead><tr><th>Jina</th><th>Simu</th><th>Email</th><th>Anwani</th><th>Action</th></tr></thead><tbody>';
+            let html = '</table><thead><tr><th>Jina</th><th>Simu</th><th>Email</th><th>Anwani</th><th>Action</th></tr></thead><tbody>';
             customers.forEach((c, idx) => {
                 html += `<tr>
                     <td><strong>${c.name}</strong></td>
@@ -617,11 +627,9 @@
             loadTopProducts();
             showReceipt(saleRecord);
             
-            // Send SMS automatically if phone number is provided
             if (customerPhone && customerPhone.trim() !== '') {
                 const smsMsg = `Asante ${customerName}!\nInvoice: ${invoice}\nTotal: TZS ${total.toLocaleString()}\nItems: ${product.name} x${qty}\nSMART POS - Shinyanga`;
                 alert(`📱 SMS imetumwa kwa ${customerPhone}\n\n${smsMsg}`);
-                // Here you can integrate actual SMS API (Africa's Talking, Twilio, etc.)
             }
         }
 
@@ -641,7 +649,7 @@
                         <td><button onclick="quickAddStock(${p.id})" class="btn-warning">➕ Ongeza Stock</button></td>
                     </tr>`;
                 });
-                html += '</tbody></tr>';
+                html += '</tbody></td>';
                 div.innerHTML = html;
             }
         }
@@ -700,7 +708,7 @@
             document.getElementById('expectedProfit').innerText = expectedProfit.toLocaleString();
             document.getElementById('stockSummary').innerHTML = `
                 <p><strong>Jumla ya Bidhaa:</strong> ${products.length}</p>
-                <p><strong>Thamani ya Stock (Bei ya Kuuza):</strong> TZS ${totalValue.toLocaleString()}</p>
+                <p><strong>Thamani ya Stock:</strong> TZS ${totalValue.toLocaleString()}</p>
                 <p><strong>Gharama ya Stock:</strong> TZS ${totalCost.toLocaleString()}</p>
                 <p><strong>💰 Makadirio ya Faida ya Stock Nzima:</strong> TZS ${expectedProfit.toLocaleString()}</p>
                 <p><strong>Faida Halisi kutoka kwa Mauzo Yote:</strong> TZS ${sales.reduce((sum, s) => sum + (s.profit || 0), 0).toLocaleString()}</p>
@@ -726,7 +734,7 @@
                     <p><strong>Mteja:</strong> ${sale.customerName}</p>
                     ${sale.customerPhone ? `<p><strong>Simu ya Mteja:</strong> ${sale.customerPhone}</p>` : ''}
                     <hr>
-                    <table style="width:100%"><thead><tr><th>Bidhaa</th><th>Idadi</th><th>Bei ya Kitengo</th><th>Jumla</th></tr></thead>
+                    <table style="width:100%"><thead><tr><th>Bidhaa</th><th>Idadi</th><th>Bei ya Kitengo</th><th>Jumla</th></table></thead>
                     <tbody>${sale.items.map(i => `<tr>
                         <td><strong>${i.productName}</strong></td>
                         <td style="text-align:center;">${i.quantity}</td>
@@ -760,7 +768,6 @@
             if (phone && phone.trim() !== '' && lastReceipt) {
                 const message = `Asante ${lastReceipt.customerName}!\nInvoice: ${lastReceipt.invoice}\nTotal: TZS ${lastReceipt.total.toLocaleString()}\nItems: ${lastReceipt.items.map(i => `${i.productName} x${i.quantity}`).join(', ')}\nSMART POS - Shinyanga`;
                 alert(`📱 SMS imetumwa kwa ${phone}\n\n${message}`);
-                // SMS API integration point
             } else if (!phone || phone.trim() === '') {
                 alert('⚠️ Tafadhali weka namba ya simu ya mteja kwenye sehemu ya "Namba ya Simu ya Mteja"!');
             } else {
@@ -775,7 +782,7 @@
                 container.innerHTML = '<p>Hakuna wafanyakazi wengine. Ongeza mfanyakazi kwanza.</p>'; 
                 return; 
             }
-            let html = '<table><thead><tr>
+            let html = '</table><thead><tr>
                 <th>Jina</th>
                 <th>Email</th>
                 <th>Simu</th>
@@ -789,7 +796,7 @@
                     <td>${u.phone || '-'}</td>
                     <td>${u.role === 'admin' ? 'Admin' : 'Cashier'}</td>
                     <td><button onclick="deleteUser(${idx})" class="btn-danger">🗑️ Futa</button></td>
-                </table>`;
+                </tr>`;
             });
             html += '</tbody></table>';
             container.innerHTML = html;

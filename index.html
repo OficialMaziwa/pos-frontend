@@ -52,6 +52,50 @@
         .form-group input:focus, .form-group select:focus { outline: none; border-color: #1a73e8; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         
+        /* Product Grid - New Style */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .product-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s;
+        }
+        .product-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        .product-card h4 {
+            color: #1a73e8;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .product-card .price {
+            font-size: 20px;
+            font-weight: bold;
+            color: #10b981;
+            margin: 8px 0;
+        }
+        .product-card .stock {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .product-card .stock.low {
+            color: #f59e0b;
+            font-weight: bold;
+        }
+        .product-card .actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
         /* Tables */
         .table-responsive { overflow-x: auto; margin-top: 15px; }
         table { width: 100%; border-collapse: collapse; }
@@ -67,6 +111,7 @@
         .btn-warning { background: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
         .btn-warning:hover { background: #d97706; }
         .btn-success { background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+        .btn-sm { padding: 4px 8px; font-size: 11px; }
         
         /* Alerts */
         .low-stock { color: #f59e0b; font-weight: bold; }
@@ -87,6 +132,7 @@
             .form-row { grid-template-columns: 1fr; }
             .tabs { gap: 5px; }
             .tab-btn { padding: 8px 12px; font-size: 12px; }
+            .products-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -153,7 +199,7 @@
                 <div class="card">
                     <h3>📋 Orodha ya Bidhaa</h3>
                     <div class="form-group"><label>Chuja kwa Category</label><select id="filterCategory" onchange="displayProducts()"><option value="all">Category Zote</option></select></div>
-                    <div class="table-responsive"><div id="productsList"></div></div>
+                    <div id="productsList"></div>
                 </div>
             </div>
 
@@ -250,7 +296,7 @@
                 </div>
             </div>
 
-            <!-- Users Tab (Admin only) -->
+            <!-- Users Tab (Admin only) - HII NDIO FORM YA WAFANYAKAZI, HAIONEKANI KWENYE TABS NYINGINE -->
             <div id="usersTab" class="tab-content admin-only">
                 <div class="card">
                     <h3>➕ Ongeza Mfanyakazi</h3>
@@ -325,7 +371,6 @@
             saveData();
         }
 
-        // Check if user was previously logged in (from localStorage)
         function checkSavedSession() {
             const savedUserEmail = localStorage.getItem('currentUserEmail');
             if (savedUserEmail) {
@@ -347,7 +392,6 @@
             
             if (user) {
                 currentUser = user;
-                // Save user session to localStorage
                 localStorage.setItem('currentUserEmail', user.email);
                 
                 document.getElementById('loginScreen').style.display = 'none';
@@ -385,7 +429,6 @@
 
         function logout() {
             currentUser = null;
-            // Clear saved session
             localStorage.removeItem('currentUserEmail');
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('dashboard').style.display = 'none';
@@ -496,33 +539,38 @@
             const filter = document.getElementById('filterCategory').value;
             const filtered = filter === 'all' ? products : products.filter(p => p.category === filter);
             const container = document.getElementById('productsList');
+            
             if (filtered.length === 0) {
-                container.innerHTML = '<p>Hakuna bidhaa. Ongeza bidhaa kwanza.</p>';
+                container.innerHTML = '<p style="text-align:center; padding:40px;">📦 Hakuna bidhaa. Ongeza bidhaa kwanza.</p>';
                 return;
             }
-            let html = '<tr><thead><tr>';
-            html += '<th>Jina</th><th>SKU</th><th>Category</th><th>Bei ya Kununulia</th><th>Bei ya Kuuza</th><th>Stock</th><th>Faida/Unit</th><th>Kitendo</th>';
-            html += '</thead><tbody>';
             
+            let html = '<div class="products-grid">';
             filtered.forEach(p => {
                 const isLow = p.stock <= p.alertLevel;
-                const profitPerUnit = p.sellingPrice - p.costPrice;
-                html += `<tr>
-                    <td><strong>${p.name}</strong></td>
-                    <td>${p.sku}</td>
-                    <td>${p.category}</td>
-                    <td>TZS ${(p.costPrice || 0).toLocaleString()}</td>
-                    <td>TZS ${p.sellingPrice.toLocaleString()}</td>
-                    <td class="${isLow ? 'low-stock' : ''}">${p.stock} ${isLow ? '⚠️' : ''}</td>
-                    <td>TZS ${profitPerUnit.toLocaleString()}</td>
-                    <td>
-                        <button onclick="editProduct(${p.id})" class="btn-warning">✏️ Bei</button>
-                        <button onclick="deleteProduct(${p.id})" class="btn-danger">🗑️</button>
-                    </td>
-                </tr>`;
+                const profitPerUnit = p.sellingPrice - (p.costPrice || 0);
+                html += `
+                    <div class="product-card">
+                        <h4>${escapeHtml(p.name)}</h4>
+                        <div class="price">TZS ${p.sellingPrice.toLocaleString()}</div>
+                        <div class="stock ${isLow ? 'low' : ''}">📦 Stock: ${p.stock} ${isLow ? '⚠️ Inazidi kuisha!' : ''}</div>
+                        <div style="font-size:12px; color:#666;">SKU: ${p.sku} | Category: ${p.category}</div>
+                        <div style="font-size:12px; color:#10b981;">💰 Faida/Unit: TZS ${profitPerUnit.toLocaleString()}</div>
+                        <div class="actions">
+                            <button onclick="editProduct(${p.id})" class="btn-warning btn-sm">✏️ Badilisha Bei</button>
+                            <button onclick="deleteProduct(${p.id})" class="btn-danger btn-sm">🗑️ Futa</button>
+                        </div>
+                    </div>
+                `;
             });
-            html += '</tbody></table>';
+            html += '</div>';
             container.innerHTML = html;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         function editProduct(id) {
@@ -745,7 +793,7 @@
                     <td><strong>${p.name}</strong></td>
                     <td class="low-stock">${p.stock} tu</td>
                     <td>${p.alertLevel}</td>
-                    <td><button onclick="quickAddStock(${p.id})" class="btn-warning">➕ Ongeza Stock</button></td>
+                    <td><button onclick="quickAddStock(${p.id})" class="btn-warning btn-sm">➕ Ongeza Stock</button></td>
                 </tr>`;
             });
             html += '</tbody></table>';
@@ -873,7 +921,7 @@
                         <td>${escapeHtml(u.email)}</td>
                         <td>${u.phone || '-'}</td>
                         <td>${u.role === 'admin' ? '👑 Admin (Msimamizi)' : '👤 Cashier (Muuzaji)'}</td>
-                        <td><button onclick="deleteUserByEmail('${escapeHtml(u.email)}')" class="btn-danger">🗑️ Futa</button></td>
+                        <td><button onclick="deleteUserByEmail('${escapeHtml(u.email)}')" class="btn-danger btn-sm">🗑️ Futa</button></td>
                     </tr>
                 `;
             });
@@ -883,12 +931,6 @@
                 </table>
             `;
             container.innerHTML = html;
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
         }
 
         function deleteUserByEmail(email) {
@@ -1055,9 +1097,7 @@
         }
 
         // ============ INITIALIZATION ============
-        // First check if user has saved session
         if (checkSavedSession()) {
-            // User was logged in, show dashboard
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
             document.getElementById('userName').innerHTML = currentUser.name;
@@ -1083,7 +1123,6 @@
             checkLowStock();
             loadStockSummary();
         } else {
-            // Show login screen
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('dashboard').style.display = 'none';
         }

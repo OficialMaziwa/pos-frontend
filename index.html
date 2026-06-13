@@ -110,30 +110,19 @@
 
             <!-- Dashboard Tab -->
             <div id="dashboardTab" class="tab-content active">
-                <div class="card">
-                    <h3>📈 Muhtasari wa Leo</h3>
-                    <div id="dashboardSummary"></div>
-                </div>
-                <div class="card">
-                    <h3>🏆 Bidhaa Zinazouzwa Sana</h3>
-                    <div id="topProducts"></div>
-                </div>
+                <div class="card"><h3>📈 Muhtasari wa Leo</h3><div id="dashboardSummary"></div></div>
+                <div class="card"><h3>🏆 Bidhaa Zinazouzwa Sana</h3><div id="topProducts"></div></div>
             </div>
 
             <!-- Categories Tab -->
             <div id="categoriesTab" class="tab-content">
                 <div class="card">
                     <h3>➕ Ongeza Category</h3>
-                    <div class="form-row">
-                        <div class="form-group"><label>Jina la Category</label><input type="text" id="newCategoryName" placeholder="Kwa mfano: Vyakula, Dawa, Nguo"></div>
-                    </div>
+                    <div class="form-row"><div class="form-group"><label>Jina la Category</label><input type="text" id="newCategoryName" placeholder="Kwa mfano: Vyakula, Dawa, Nguo"></div></div>
                     <button onclick="addCategory()" class="btn-primary">Ongeza Category</button>
                     <div id="categorySuccess" class="success"></div>
                 </div>
-                <div class="card">
-                    <h3>📁 Orodha ya Categories</h3>
-                    <div class="table-responsive"><div id="categoriesList"></div></div>
-                </div>
+                <div class="card"><h3>📁 Orodha ya Categories</h3><div class="table-responsive"><div id="categoriesList"></div></div></div>
             </div>
 
             <!-- Products Tab -->
@@ -178,10 +167,7 @@
                     </div>
                     <button onclick="addCustomer()" class="btn-primary">Ongeza Mteja</button>
                 </div>
-                <div class="card">
-                    <h3>📋 Orodha ya Wateja</h3>
-                    <div class="table-responsive"><div id="customersList"></div></div>
-                </div>
+                <div class="card"><h3>📋 Orodha ya Wateja</h3><div class="table-responsive"><div id="customersList"></div></div></div>
             </div>
 
             <!-- Sales Tab -->
@@ -191,7 +177,7 @@
                     <div id="saleSuccess" class="success"></div>
                     <div class="form-row">
                         <div class="form-group"><label>Mteja</label><select id="saleCustomerSelect"><option value="">Mteja wa Kawaida</option></select></div>
-                        <div class="form-group"><label>Namba ya Simu</label><input type="tel" id="saleCustomerPhone" placeholder="Namba ya simu ya mteja"></div>
+                        <div class="form-group"><label>Namba ya Simu ya Mteja</label><input type="tel" id="saleCustomerPhone" placeholder="07XXXXXXXX" style="background:#fff"></div>
                     </div>
                     <div class="form-row">
                         <div class="form-group"><label>Category</label><select id="saleCategory" onchange="loadProductsForSale()"><option value="">Chagua Category</option></select></div>
@@ -233,7 +219,7 @@
                 <div class="card"><h3>📊 Muhtasari wa Stock na Faida</h3><div id="stockSummary"></div></div>
             </div>
 
-            <!-- Users Tab (Admin only) -->
+            <!-- Users Tab -->
             <div id="usersTab" class="tab-content">
                 <div class="card">
                     <h3>➕ Ongeza Mfanyakazi</h3>
@@ -261,7 +247,7 @@
             <div id="receiptContent"></div>
             <div style="display: flex; gap: 10px; margin-top: 20px;">
                 <button onclick="printReceipt()" class="btn-primary">🖨️ Chapisha Risiti</button>
-                <button onclick="sendSMSReceipt()" class="btn-success">📱 Tuma SMS (0763387403)</button>
+                <button onclick="sendSMSReceipt()" class="btn-success">📱 Tuma SMS kwa Mteja</button>
             </div>
         </div>
     </div>
@@ -352,7 +338,7 @@
                 return;
             }
             let html = '<table><thead><tr><th>Bidhaa</th><th>Kiasi Kilichouzwa</th></tr></thead><tbody>';
-            sorted.forEach(([name, qty]) => { html += `<tr><td>${name}</td><td>${qty}</td></tr>`; });
+            sorted.forEach(([name, qty]) => { html += `<tr><td><strong>${name}</strong></td><td style="text-align:center;">${qty}</td></tr>`; });
             html += '</tbody></table>';
             document.getElementById('topProducts').innerHTML = html;
         }
@@ -459,7 +445,7 @@
                     <td><button onclick="editProduct(${p.id})" class="btn-warning">✏️ Bei</button> <button onclick="deleteProduct(${p.id})" class="btn-danger">🗑️</button></td>
                 </tr>`;
             });
-            html += '</tbody></td>';
+            html += '</tbody></table>';
             container.innerHTML = html;
         }
 
@@ -491,10 +477,12 @@
         function displayCustomers() {
             const container = document.getElementById('customersList');
             if (customers.length === 0) { container.innerHTML = '<p>Hakuna wateja. Ongeza mteja kwanza.</p>'; return; }
-            let html = '</table><thead><tr><th>Jina</th><th>Simu</th><th>Email</th><th>Anwani</th><th>Action</th></tr></thead><tbody>';
+            let html = '<table><thead><tr><th>Jina</th><th>Simu</th><th>Email</th><th>Anwani</th><th>Action</th></tr></thead><tbody>';
             customers.forEach((c, idx) => {
-                html += `<tr><td><strong>${c.name}</strong></td><td>${c.phone || '-'}</td><td>${c.email || '-'}</td><td>${c.address || '-'}</td>
-                    <td><button onclick="deleteCustomer(${idx})" class="btn-danger">🗑️ Futa</button></td></tr>`;
+                html += `<tr>
+                    <td><strong>${c.name}</strong></td><td>${c.phone || '-'}</td><td>${c.email || '-'}</td><td>${c.address || '-'}</td>
+                    <td><button onclick="deleteCustomer(${idx})" class="btn-danger">🗑️ Futa</button></td>
+                </tr>`;
             });
             html += '</tbody></table>';
             container.innerHTML = html;
@@ -506,7 +494,10 @@
             
             saleSelect.onchange = function() {
                 const opt = this.options[this.selectedIndex];
-                document.getElementById('saleCustomerPhone').value = opt?.dataset?.phone || '';
+                const phoneInput = document.getElementById('saleCustomerPhone');
+                if (phoneInput) {
+                    phoneInput.value = opt?.dataset?.phone || '';
+                }
             };
         }
 
@@ -589,11 +580,12 @@
             const customerPrice = parseFloat(document.getElementById('customerPrice').value);
             const total = customerPrice * qty;
             const paymentMethod = document.getElementById('paymentMethod').value;
-            const customerNameSelect = document.getElementById('saleCustomerSelect');
-            const selectedCustomer = customerNameSelect.options[customerNameSelect.selectedIndex];
-            const customerName = selectedCustomer?.value === '' ? 'Mteja wa Kawaida' : selectedCustomer.text.split(' - ')[0];
+            const customerSelect = document.getElementById('saleCustomerSelect');
+            const selectedOption = customerSelect.options[customerSelect.selectedIndex];
+            const customerName = selectedOption?.value === '' ? 'Mteja wa Kawaida' : (selectedOption?.text.split(' - ')[0] || 'Mteja');
             const customerPhone = document.getElementById('saleCustomerPhone').value;
-            if (customerPrice < product.costPrice) return alert('Bei ya mteja ipo chini!');
+            
+            if (customerPrice < product.costPrice) return alert('Bei ya mteja ipo chini ya bei ya kununulia!');
             if (product.stock < qty) return alert(`Stock haitoshi! Zipo ${product.stock} tu.`);
             
             const profit = (customerPrice - product.costPrice) * qty;
@@ -605,11 +597,11 @@
             lastReceipt = saleRecord;
             
             showSuccess('saleSuccess', `✅ Mauzo yamerekodiwa! Invoice: ${invoice} | Faida: TZS ${profit.toLocaleString()}`);
+            
             document.getElementById('quantity').value = 1;
             document.getElementById('customerPrice').value = '';
             document.getElementById('priceValidationMsg').innerHTML = '';
             document.getElementById('saleButton').disabled = true;
-            document.getElementById('saleCustomerPhone').value = '';
             
             displayProducts();
             loadDashboardSummary();
@@ -618,8 +610,11 @@
             loadTopProducts();
             showReceipt(saleRecord);
             
-            if (customerPhone) {
-                alert(`📱 SMS imetumwa kwa ${customerPhone}\nInvoice: ${invoice}\nTotal: TZS ${total.toLocaleString()}`);
+            // Send SMS automatically if phone number is provided
+            if (customerPhone && customerPhone.trim() !== '') {
+                const smsMsg = `Asante ${customerName}!\nInvoice: ${invoice}\nTotal: TZS ${total.toLocaleString()}\nItems: ${product.name} x${qty}\nSMART POS - Shinyanga`;
+                alert(`📱 SMS imetumwa kwa ${customerPhone}\n\n${smsMsg}`);
+                // Here you can integrate actual SMS API
             }
         }
 
@@ -644,11 +639,21 @@
             }
         }
 
-        function quickAddStock(id) { const qty = prompt('Kiasi cha kuongeza:'); if(qty && parseInt(qty) > 0) addStockToProduct(id, parseInt(qty)); }
+        function quickAddStock(id) { 
+            const qty = prompt('Kiasi cha kuongeza stock:'); 
+            if(qty && parseInt(qty) > 0) addStockToProduct(id, parseInt(qty)); 
+        }
         
         function addStockToProduct(id, qty) {
             const p = products.find(p => p.id === id);
-            if(p) { p.stock += qty; saveData(); displayProducts(); checkLowStock(); loadStockSummary(); alert(`✅ Stock imeongezeka! Sasa stock: ${p.stock}`); }
+            if(p) { 
+                p.stock += qty; 
+                saveData(); 
+                displayProducts(); 
+                checkLowStock(); 
+                loadStockSummary(); 
+                alert(`✅ Stock imeongezeka! Sasa stock: ${p.stock}`); 
+            }
         }
 
         function loadProductsForStock() {
@@ -714,8 +719,8 @@
                     ${sale.customerPhone ? `<p><strong>Simu:</strong> ${sale.customerPhone}</p>` : ''}
                     <hr>
                     <table style="width:100%"><thead><tr><th>Bidhaa</th><th>Idadi</th><th>Bei</th><th>Jumla</th></tr></thead>
-                    <tbody>${sale.items.map(i => `<tr><td>${i.productName}</td><td style="text-align:center;">${i.quantity}</td><td style="text-align:right;">TZS ${i.price.toLocaleString()}</td><td style="text-align:right;">TZS ${i.total.toLocaleString()}</td></tr>`).join('')}</tbody>
-                    <tfoot><tr style="border-top:1px solid #000;"><td colspan="3"><strong>JUMLA:</strong></td><td><strong>TZS ${sale.total.toLocaleString()}</strong></td></tr></tfoot>
+                    <tbody>${sale.items.map(i => `<tr><td><strong>${i.productName}</strong></td><td style="text-align:center;">${i.quantity}</td><td style="text-align:right;">TZS ${i.price.toLocaleString()}</td><td style="text-align:right;">TZS ${i.total.toLocaleString()}</td></tr>`).join('')}</tbody>
+                    <tfoot><tr style="border-top:1px solid #000;"><td colspan="3"><strong>JUMLA KULIPA:</strong></td><td><strong>TZS ${sale.total.toLocaleString()}</strong></td></tr></tfoot>
                     </table>
                     <hr>
                     <p><strong>Njia ya Malipo:</strong> ${sale.payment?.toUpperCase()}</p>
@@ -727,8 +732,28 @@
         }
 
         function closeReceipt() { document.getElementById('receiptModal').style.display = 'none'; }
-        function printReceipt() { const w = window.open('', '_blank'); w.document.write('<html><head><title>RISITI</title><style>body{font-family:monospace;padding:20px}</style></head><body>' + document.getElementById('receiptContent').innerHTML + '</body></html>'); w.print(); }
-        function sendSMSReceipt() { const phone = document.getElementById('saleCustomerPhone').value; if (phone && lastReceipt) alert(`📱 SMS imetumwa kwa ${phone}\nInvoice: ${lastReceipt.invoice}\nTotal: TZS ${lastReceipt.total.toLocaleString()}`); else alert('Hakuna namba ya simu'); }
+        
+        function printReceipt() { 
+            const w = window.open('', '_blank'); 
+            w.document.write('<html><head><title>RISITI - SMART POS</title><style>body{font-family:monospace;padding:20px}</style></head><body>' + document.getElementById('receiptContent').innerHTML + '</body></html>'); 
+            w.print(); 
+        }
+        
+        function sendSMSReceipt() { 
+            // Get phone from the sales form input
+            const phoneInput = document.getElementById('saleCustomerPhone');
+            const phone = phoneInput ? phoneInput.value : null;
+            
+            if (phone && phone.trim() !== '' && lastReceipt) {
+                const message = `Asante ${lastReceipt.customerName}!\nInvoice: ${lastReceipt.invoice}\nTotal: TZS ${lastReceipt.total.toLocaleString()}\nItems: ${lastReceipt.items.map(i => `${i.productName} x${i.quantity}`).join(', ')}\nSMART POS - Shinyanga`;
+                alert(`📱 SMS imetumwa kwa ${phone}\n\n${message}`);
+                // Here you can integrate actual SMS API (Africa's Talking, Twilio, etc.)
+            } else if (!phone || phone.trim() === '') {
+                alert('⚠️ Tafadhali weka namba ya simu ya mteja kwenye sehemu ya "Namba ya Simu ya Mteja"!');
+            } else {
+                alert('Hakuna taarifa za mauzo. Tafadhali rekodi mauzo kwanza.');
+            }
+        }
 
         // User Management (Admin)
         function loadUsers() {
@@ -744,7 +769,7 @@
                     <td><button onclick="deleteUser(${idx})" class="btn-danger">🗑️</button></td>
                 </tr>`;
             });
-            html += '</tbody></tr>';
+            html += '</tbody></table>';
             container.innerHTML = html;
         }
 

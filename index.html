@@ -250,7 +250,7 @@
                 </div>
             </div>
 
-            <!-- Users Tab (Admin only) -->
+            <!-- Users Tab (Admin only) - HII NDIYO ITAONESHA FORM NA TABLE ZA WAFANYAKAZI -->
             <div id="usersTab" class="tab-content admin-only">
                 <div class="card">
                     <h3>➕ Ongeza Mfanyakazi</h3>
@@ -531,7 +531,7 @@
                 container.innerHTML = '<p>Hakuna wateja. Ongeza mteja kwanza.</p>';
                 return;
             }
-            let html = '<table><thead><tr><th>Jina</th><th>Simu</th><th>Email</th><th>Anwani</th><th>Kitendo</th></tr></thead><tbody>';
+            let html = '<td><thead><tr><th>Jina</th><th>Simu</th><th>Email</th><th>Anwani</th><th>Kitendo</th></tr></thead><tbody>';
             customers.forEach((c, idx) => {
                 html += `<tr>
                     <td><strong>${c.name}</strong></td>
@@ -967,7 +967,7 @@
                         <tfoot><tr style="border-top:1px solid #000;">
                             <td colspan="3"><strong>JUMLA:</strong></td>
                             <td style="text-align:right;"><strong>TZS ${sale.total.toLocaleString()}</strong></td>
-                          </tr></tfoot>
+                        </tr></tfoot>
                     </table>
                     <hr>
                     <p><strong>Njia ya Malipo:</strong> ${sale.payment?.toUpperCase()}</p>
@@ -1005,15 +1005,32 @@
         }
 
         function showTab(tab) {
+            // Hide all tab contents
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            // Remove active class from all buttons
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            // Show selected tab content
             document.getElementById(`${tab}Tab`).classList.add('active');
+            // Add active class to clicked button
             event.target.classList.add('active');
-            if (tab === 'stock') { checkLowStock(); loadStockSummary(); }
-            if (tab === 'products') { displayProducts(); }
-            if (tab === 'customers') { displayCustomers(); }
-            if (tab === 'categories') { loadCategories(); }
-            if (tab === 'users' && currentUser?.role === 'admin') { loadUsers(); }
+            
+            // Load data based on selected tab
+            if (tab === 'stock') { 
+                checkLowStock(); 
+                loadStockSummary(); 
+            }
+            if (tab === 'products') { 
+                displayProducts(); 
+            }
+            if (tab === 'customers') { 
+                displayCustomers(); 
+            }
+            if (tab === 'categories') { 
+                loadCategories(); 
+            }
+            if (tab === 'users' && currentUser?.role === 'admin') { 
+                loadUsers(); 
+            }
         }
 
         // Initialize

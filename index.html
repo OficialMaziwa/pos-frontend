@@ -250,51 +250,31 @@
                 </div>
             </div>
 
-            <!-- Users Tab (Admin only) - IMEPIGWA CHAPA KAMA ULIVYOTAKA -->
+            <!-- Users Tab (Admin only) -->
             <div id="usersTab" class="tab-content admin-only">
                 <div class="card">
-                    <h3>👥 Usimamizi wa Wafanyakazi</h3>
+                    <h3>➕ Ongeza Mfanyakazi</h3>
                     <div id="userSuccess" class="success"></div>
-                    
-                    <!-- Grid: Form upande, Orodha upande mwingine -->
-                    <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 25px; align-items: start;">
-                        
-                        <!-- LEFT: Form ya Kuongeza Mfanyakazi -->
-                        <div style="background: #f8fafc; padding: 20px; border-radius: 12px;">
-                            <h4 style="margin-bottom: 20px; color: #1a73e8;">➕ Ongeza Mfanyakazi Mpya</h4>
-                            <div class="form-group">
-                                <label>Jina Kamili</label>
-                                <input type="text" id="userFullName" placeholder="Kwa mfano: John Doe">
-                            </div>
-                            <div class="form-group">
-                                <label>Barua pepe (Email)</label>
-                                <input type="email" id="userEmail" placeholder="john@example.com">
-                            </div>
-                            <div class="form-group">
-                                <label>Namba ya Simu</label>
-                                <input type="tel" id="userPhone" placeholder="07XXXXXXXX">
-                            </div>
-                            <div class="form-group">
-                                <label>Nafasi (Role)</label>
-                                <select id="userRoleSelect">
-                                    <option value="cashier">👤 Cashier (Muuzaji)</option>
-                                    <option value="admin">👑 Admin (Msimamizi)</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Nenosiri (Password)</label>
-                                <input type="password" id="userPassword" placeholder="Nenosiri la mfanyakazi">
-                            </div>
-                            <button onclick="createUser()" class="btn-primary" style="width: 100%;">📌 Ongeza Mfanyakazi</button>
+                    <div class="form-row">
+                        <div class="form-group"><label>Jina Kamili</label><input type="text" id="userFullName" placeholder="Kwa mfano: John Doe"></div>
+                        <div class="form-group"><label>Barua pepe (Email)</label><input type="email" id="userEmail" placeholder="john@example.com"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Namba ya Simu</label><input type="tel" id="userPhone" placeholder="07XXXXXXXX"></div>
+                        <div class="form-group"><label>Nafasi (Role)</label>
+                            <select id="userRoleSelect">
+                                <option value="cashier">👤 Cashier (Muuzaji)</option>
+                                <option value="admin">👑 Admin (Msimamizi)</option>
+                            </select>
                         </div>
-                        
-                        <!-- RIGHT: Orodha ya Wafanyakazi -->
-                        <div>
-                            <h4 style="margin-bottom: 15px; color: #1a73e8;">📋 Orodha ya Wafanyakazi</h4>
-                            <div class="table-responsive">
-                                <div id="usersList"></div>
-                            </div>
-                        </div>
+                    </div>
+                    <div class="form-group"><label>Nenosiri (Password)</label><input type="password" id="userPassword" placeholder="Nenosiri la mfanyakazi"></div>
+                    <button onclick="createUser()" class="btn-primary">Ongeza Mfanyakazi</button>
+                </div>
+                <div class="card">
+                    <h3>📋 Orodha ya Wafanyakazi</h3>
+                    <div class="table-responsive">
+                        <div id="usersList"></div>
                     </div>
                 </div>
             </div>
@@ -742,7 +722,7 @@
                     <td><button onclick="quickAddStock(${p.id})" class="btn-warning">➕ Ongeza Stock</button></td>
                 </tr>`;
             });
-            html += '</tbody></tr>';
+            html += '</tbody></table>';
             div.innerHTML = html;
         }
 
@@ -982,12 +962,12 @@
                     <table style="width:100%; border-collapse: collapse;">
                         <thead><tr style="border-bottom:1px solid #000;">
                             <th>Bidhaa</th><th>Idadi</th><th>Bei</th><th>Jumla</th>
-                        </td></thead>
+                        </tr></thead>
                         <tbody>${itemsHtml}</tbody>
                         <tfoot><tr style="border-top:1px solid #000;">
                             <td colspan="3"><strong>JUMLA:</strong></td>
                             <td style="text-align:right;"><strong>TZS ${sale.total.toLocaleString()}</strong></td>
-                         </tr></tfoot>
+                          </tr></tfoot>
                     </table>
                     <hr>
                     <p><strong>Njia ya Malipo:</strong> ${sale.payment?.toUpperCase()}</p>

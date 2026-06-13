@@ -200,7 +200,7 @@
                 </div>
             </div>
 
-            <!-- Sales Tab -->
+            <!-- Sales Tab - HAKUNA WAFANYAKAZI HAPA -->
             <div id="salesTab" class="tab-content">
                 <div class="card">
                     <h3>🛒 Rekodi Mauzo</h3>
@@ -233,7 +233,7 @@
                 </div>
             </div>
 
-            <!-- Stock Tab -->
+            <!-- Stock Tab - HAKUNA WAFANYAKAZI HAPA -->
             <div id="stockTab" class="tab-content">
                 <div class="card">
                     <h3>⚠️ Bidhaa Zinazoisha (Low Stock Alert)</h3>
@@ -258,7 +258,7 @@
                 </div>
             </div>
 
-            <!-- Users Tab (Admin only) - FORM NA ORODHA YA WAFANYAKAZI IPO HAPA TU, HAIRUDIWI -->
+            <!-- Users Tab (Admin only) - FORM NA ORODHA YA WAFANYAKAZI IPO HAPA TU -->
             <div id="usersTab" class="tab-content admin-only">
                 <div class="card">
                     <h3>➕ Ongeza Mfanyakazi</h3>
@@ -398,7 +398,10 @@
             let html = '<table><thead><tr><th>Jina la Category</th><th>Kitendo</th></tr></thead><tbody>';
             let options = '<option value="">Chagua Category</option>';
             categories.forEach((cat, idx) => {
-                html += `<tr><td><strong>📁 ${cat}</strong></td><td><button onclick="deleteCategory(${idx})" class="btn-danger">🗑️ Futa</button></td></tr>`;
+                html += `<tr>
+                    <td><strong>📁 ${cat}</strong></td>
+                    <td><button onclick="deleteCategory(${idx})" class="btn-danger">🗑️ Futa</button></td>
+                </tr>`;
                 options += `<option value="${cat}">${cat}</option>`;
             });
             html += '</tbody></table>';
@@ -519,9 +522,15 @@
         function displayCustomers() {
             const container = document.getElementById('customersList');
             if (customers.length === 0) { container.innerHTML = '<p>Hakuna wateja. Ongeza mteja kwanza.</p>'; return; }
-            let html = '<table><thead><tr><th>Jina</th><th>Simu</th><th>Email</th><th>Anwani</th><th>Kitendo</th></tr></thead><tbody>';
+            let html = '</table><thead><tr><th>Jina</th><th>Simu</th><th>Email</th><th>Anwani</th><th>Kitendo</th></tr></thead><tbody>';
             customers.forEach((c, idx) => {
-                html += `<tr><td><strong>${c.name}</strong></td><td>${c.phone || '-'}</td><td>${c.email || '-'}</td><td>${c.address || '-'}</td><td><button onclick="deleteCustomer(${idx})" class="btn-danger">🗑️ Futa</button></td></tr>`;
+                html += `<tr>
+                    <td><strong>${c.name}</strong></td>
+                    <td>${c.phone || '-'}</td>
+                    <td>${c.email || '-'}</td>
+                    <td>${c.address || '-'}</td>
+                    <td><button onclick="deleteCustomer(${idx})" class="btn-danger">🗑️ Futa</button></td>
+                </tr>`;
             });
             html += '</tbody></table>';
             container.innerHTML = html;
@@ -639,7 +648,12 @@
             const div = document.getElementById('lowStockList');
             if (low.length === 0) { div.innerHTML = '<p>✅ Hakuna bidhaa zinazoisha. Stock zote ni nzuri.</p>'; return; }
             let html = '<table><thead><tr><th>Bidhaa</th><th>Stock</th><th>Alert Level</th><th>Action</th></tr></thead><tbody>';
-            low.forEach(p => { html += `<tr><td><strong>${p.name}</strong></td><td class="low-stock">${p.stock} tu</td><td>${p.alertLevel}</td><td><button onclick="quickAddStock(${p.id})" class="btn-warning btn-sm">➕ Ongeza Stock</button></td></tr>`; });
+            low.forEach(p => { html += `<tr>
+                <td><strong>${p.name}</strong></td>
+                <td class="low-stock">${p.stock} tu</td>
+                <td>${p.alertLevel}</td>
+                <td><button onclick="quickAddStock(${p.id})" class="btn-warning btn-sm">➕ Ongeza Stock</button></td>
+            </tr>`; });
             html += '</tbody></table>';
             div.innerHTML = html;
         }
@@ -694,9 +708,15 @@
             const container = document.getElementById('usersList');
             const otherUsers = users.filter(u => u.email !== 'malabamalaba26@gmail.com');
             if (otherUsers.length === 0) { container.innerHTML = '<p style="text-align: center; padding: 20px;">Hakuna wafanyakazi wengine. Ongeza mfanyakazi kwanza.</p>'; return; }
-            let html = '</table><thead><tr><th>Jina Kamili</th><th>Barua pepe</th><th>Namba ya Simu</th><th>Nafasi</th><th>Kitendo</th></tr></thead><tbody>';
-            otherUsers.forEach(u => { html += `<tr><td><strong>${escapeHtml(u.name)}</strong></td><td>${escapeHtml(u.email)}</td><td>${u.phone || '-'}</td><td>${u.role === 'admin' ? '👑 Admin' : '👤 Cashier'}</td><td><button onclick="deleteUserByEmail('${escapeHtml(u.email)}')" class="btn-danger btn-sm">🗑️ Futa</button></td></tr>`; });
-            html += '</tbody></table>';
+            let html = '<table><thead><tr><th>Jina Kamili</th><th>Barua pepe</th><th>Namba ya Simu</th><th>Nafasi</th><th>Kitendo</th></tr></thead><tbody>';
+            otherUsers.forEach(u => { html += `<tr>
+                <td><strong>${escapeHtml(u.name)}</strong></td>
+                <td>${escapeHtml(u.email)}</td>
+                <td>${u.phone || '-'}</td>
+                <td>${u.role === 'admin' ? '👑 Admin' : '👤 Cashier'}</td>
+                <td><button onclick="deleteUserByEmail('${escapeHtml(u.email)}')" class="btn-danger btn-sm">🗑️ Futa</button></td>
+            </tr>`; });
+            html += '</tbody></td>';
             container.innerHTML = html;
         }
 
@@ -726,8 +746,34 @@
 
         function showReceipt(sale) {
             const now = new Date();
-            const itemsHtml = sale.items.map(i => `<tr><td><strong>${i.productName}</strong></td><td style="text-align:center;">${i.quantity}</td><td style="text-align:right;">TZS ${i.price.toLocaleString()}</td><td style="text-align:right;">TZS ${i.total.toLocaleString()}</td>`).join('');
-            document.getElementById('receiptContent').innerHTML = `<div style="text-align:center; font-family: monospace;"><h2>🏪 SMART POS</h2><h3>Shinyanga, Tanzania</h3><p>Simu: ${STORE_PHONE}</p><hr><p><strong>RISITI YA MALIPO</strong></p><hr><p><strong>Invoice:</strong> ${sale.invoice}</p><p><strong>Tarehe:</strong> ${now.toLocaleDateString('sw-TZ')} ${now.toLocaleTimeString('sw-TZ')}</p><p><strong>Mteja:</strong> ${sale.customerName}</p>${sale.customerPhone ? `<p><strong>Simu:</strong> ${sale.customerPhone}</p>` : ''}<hr><table style="width:100%; border-collapse: collapse;"><thead><tr style="border-bottom:1px solid #000;"><th>Bidhaa</th><th>Idadi</th><th>Bei</th><th>Jumla</th></tr></thead><tbody>${itemsHtml}</tbody><tfoot><tr style="border-top:1px solid #000;"><td colspan="3"><strong>JUMLA:</strong></td><td style="text-align:right;"><strong>TZS ${sale.total.toLocaleString()}</strong></td></tr></tfoot></table><hr><p><strong>Njia ya Malipo:</strong> ${sale.payment?.toUpperCase()}</p><p>Asante kwa kununua SMART POS!</p><p>Karibu tena</p></div>`;
+            const itemsHtml = sale.items.map(i => `<tr>
+                <td><strong>${i.productName}</strong></td>
+                <td style="text-align:center;">${i.quantity}</td>
+                <td style="text-align:right;">TZS ${i.price.toLocaleString()}</td>
+                <td style="text-align:right;">TZS ${i.total.toLocaleString()}</td>
+            </tr>`).join('');
+            document.getElementById('receiptContent').innerHTML = `<div style="text-align:center; font-family: monospace;">
+                <h2>🏪 SMART POS</h2>
+                <h3>Shinyanga, Tanzania</h3>
+                <p>Simu: ${STORE_PHONE}</p>
+                <hr>
+                <p><strong>RISITI YA MALIPO</strong></p>
+                <hr>
+                <p><strong>Invoice:</strong> ${sale.invoice}</p>
+                <p><strong>Tarehe:</strong> ${now.toLocaleDateString('sw-TZ')} ${now.toLocaleTimeString('sw-TZ')}</p>
+                <p><strong>Mteja:</strong> ${sale.customerName}</p>
+                ${sale.customerPhone ? `<p><strong>Simu:</strong> ${sale.customerPhone}</p>` : ''}
+                <hr>
+                <table style="width:100%; border-collapse: collapse;">
+                    <thead><tr style="border-bottom:1px solid #000;"><th>Bidhaa</th><th>Idadi</th><th>Bei</th><th>Jumla</th></tr></thead>
+                    <tbody>${itemsHtml}</tbody>
+                    <tfoot><tr style="border-top:1px solid #000;"><td colspan="3"><strong>JUMLA:</strong></td><td style="text-align:right;"><strong>TZS ${sale.total.toLocaleString()}</strong></td></tr></tfoot>
+                </table>
+                <hr>
+                <p><strong>Njia ya Malipo:</strong> ${sale.payment?.toUpperCase()}</p>
+                <p>Asante kwa kununua SMART POS!</p>
+                <p>Karibu tena</p>
+            </div>`;
             document.getElementById('receiptModal').style.display = 'flex';
         }
 

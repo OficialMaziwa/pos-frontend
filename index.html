@@ -72,8 +72,8 @@
             <h2>🏪 SMART POS</h2>
             <h3>Shinyanga, Tanzania</h3>
             <h4>Mfumo Kamili wa Biashara</h4>
-            <input type="text" id="username" placeholder="Jina la mtumiaji" value="admin">
-            <input type="password" id="password" placeholder="Nenosiri" value="admin123">
+            <input type="email" id="email" placeholder="Barua pepe" value="malabamalaba26@gmail.com">
+            <input type="password" id="password" placeholder="Nenosiri" value="Malaba@03">
             <button onclick="login()">INGIA MFUMO</button>
             <div id="loginError" class="error"></div>
         </div>
@@ -85,7 +85,7 @@
                 <h3>🏪 SMART POS - Shinyanga, Tanzania</h3>
                 <div class="user-info">
                     <span class="role-badge" id="userRole">Admin</span>
-                    <span id="userName">Admin</span>
+                    <span id="userName"></span>
                     <button class="logout-btn" onclick="logout()">TOKA</button>
                 </div>
             </div>
@@ -104,6 +104,7 @@
                 <button class="tab-btn" onclick="showTab('customers')">👥 Wateja</button>
                 <button class="tab-btn" onclick="showTab('sales')">💰 Mauzo</button>
                 <button class="tab-btn" onclick="showTab('stock')">📊 Stock</button>
+                <button class="tab-btn admin-only" onclick="showTab('users')">👤 Wafanyakazi</button>
             </div>
 
             <!-- Products Tab -->
@@ -216,6 +217,31 @@
                 </div>
                 <div class="card"><h3>📊 Muhtasari wa Stock na Faida</h3><div id="stockSummary"></div></div>
             </div>
+
+            <!-- Users Tab (Admin only) -->
+            <div id="usersTab" class="tab-content admin-only">
+                <div class="card">
+                    <h3>➕ Ongeza Mfanyakazi</h3>
+                    <div id="userSuccess" class="success"></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Jina Kamili</label><input type="text" id="userFullName" placeholder="Jina la mfanyakazi"></div>
+                        <div class="form-group"><label>Barua pepe (Email)</label><input type="email" id="userEmail" placeholder="Barua pepe"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Namba ya Simu</label><input type="text" id="userPhone" placeholder="Namba ya simu"></div>
+                        <div class="form-group"><label>Nafasi (Role)</label><select id="userRoleSelect">
+                            <option value="cashier">Cashier</option>
+                            <option value="admin">Admin</option>
+                        </select></div>
+                    </div>
+                    <div class="form-group"><label>Nenosiri (Password)</label><input type="password" id="userPassword" placeholder="Nenosiri"></div>
+                    <button onclick="createUser()" class="btn-primary">Ongeza Mfanyakazi</button>
+                </div>
+                <div class="card">
+                    <h3>📋 Orodha ya Wafanyakazi</h3>
+                    <div class="table-responsive"><div id="usersList"></div></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -237,6 +263,8 @@
         let categories = JSON.parse(localStorage.getItem('categories')) || ['Vyakula', 'Dawa', 'Nguo', 'Vifaa', 'Vinywaji', 'Vipodozi', 'Electronics'];
         let customers = JSON.parse(localStorage.getItem('customers')) || [];
         let sales = JSON.parse(localStorage.getItem('sales')) || [];
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+        let currentUser = null;
         let lastReceipt = null;
         const STORE_PHONE = '0763387403';
 
@@ -245,16 +273,43 @@
             localStorage.setItem('categories', JSON.stringify(categories));
             localStorage.setItem('customers', JSON.stringify(customers));
             localStorage.setItem('sales', JSON.stringify(sales));
+            localStorage.setItem('users', JSON.stringify(users));
+        }
+
+        // Initialize default admin if no users exist
+        if (users.length === 0) {
+            users.push({
+                id: Date.now(),
+                name: 'Malaba Maziwa',
+                email: 'malabamalaba26@gmail.com',
+                phone: '0763387403',
+                role: 'admin',
+                password: 'Malaba@03'
+            });
+            saveData();
         }
 
         function login() {
-            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            if (username === 'admin' && password === 'admin123') {
+            
+            const user = users.find(u => u.email === email && u.password === password);
+            
+            if (user) {
+                currentUser = user;
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
-                document.getElementById('userName').innerHTML = 'Admin';
-                document.getElementById('userRole').innerHTML = 'Admin';
+                document.getElementById('userName').innerHTML = user.name;
+                document.getElementById('userRole').innerHTML = user.role === 'admin' ? '👑 Admin' : '👤 Cashier';
+                
+                // Hide admin tabs for cashier
+                if (user.role !== 'admin') {
+                    document.querySelectorAll('.admin-only').forEach(tab => tab.style.display = 'none');
+                } else {
+                    document.querySelectorAll('.admin-only').forEach(tab => tab.style.display = 'inline-block');
+                    loadUsers();
+                }
+                
                 loadDashboard();
                 loadCategories();
                 displayProducts();
@@ -262,7 +317,7 @@
                 checkLowStock();
                 loadStockSummary();
             } else {
-                document.getElementById('loginError').innerHTML = 'Username au password si sahihi!';
+                document.getElementById('loginError').innerHTML = 'Email au password si sahihi!';
                 document.getElementById('loginError').style.display = 'block';
                 setTimeout(() => {
                     document.getElementById('loginError').style.display = 'none';
@@ -271,8 +326,11 @@
         }
 
         function logout() {
+            currentUser = null;
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('email').value = 'malabamalaba26@gmail.com';
+            document.getElementById('password').value = '';
         }
 
         function loadDashboard() {
@@ -302,7 +360,7 @@
                 return;
             }
             
-            let html = '<table><thead><tr><th>Jina la Category</th><th>Kitendo</th></tr></thead><tbody>';
+            let html = '<tr><thead><tr><th>Jina la Category</th><th>Kitendo</th></tr></thead><tbody>';
             let options = '<option value="">Chagua Category</option>';
             
             categories.forEach((cat, idx) => {
@@ -382,7 +440,7 @@
             const filtered = filter === 'all' ? products : products.filter(p => p.category === filter);
             const container = document.getElementById('productsList');
             if (filtered.length === 0) { container.innerHTML = '<p>Hakuna bidhaa</p>'; return; }
-            let html = '<table><thead><tr><th>Jina</th><th>SKU</th><th>Category</th><th>Cost</th><th>Price</th><th>Stock</th><th>Status</th><th>Action</th></tr></thead><tbody>';
+            let html = '<tr><thead><tr><th>Jina</th><th>SKU</th><th>Category</th><th>Cost</th><th>Price</th><th>Stock</th><th>Status</th><th>Action</th></tr></thead><tbody>';
             filtered.forEach(p => {
                 const isLow = p.stock <= p.alertLevel;
                 html += `<tr>
@@ -397,7 +455,7 @@
                     <button onclick="deleteProduct(${p.id})" class="btn-danger">🗑️</button></td>
                 </tr>`;
             });
-            html += '</tbody></tr>';
+            html += '</tbody></table>';
             container.innerHTML = html;
         }
 
@@ -429,7 +487,7 @@
         function displayCustomers() {
             const container = document.getElementById('customersList');
             if (customers.length === 0) { container.innerHTML = '<p>Hakuna wateja. Ongeza mteja kwanza.</p>'; return; }
-            let html = '<tr><thead><tr><th>Jina</th><th>Simu</th><th>Email</th><th>Anwani</th><th>Action</th></tr></thead><tbody>';
+            let html = '<td><thead><tr><th>Jina</th><th>Simu</th><th>Email</th><th>Anwani</th><th>Action</th></tr></thead><tbody>';
             customers.forEach((c, idx) => {
                 html += `<tr>
                     <td><strong>${c.name}</strong></td>
@@ -534,7 +592,7 @@
             document.getElementById('profitAmount').value = profit.toLocaleString();
         }
 
-        async function recordSale() {
+        function recordSale() {
             const select = document.getElementById('saleProduct');
             const productId = parseInt(select.value);
             const product = products.find(p => p.id === productId);
@@ -584,7 +642,7 @@
             const div = document.getElementById('lowStockList');
             if (low.length === 0) div.innerHTML = '<p>✅ Hakuna bidhaa zinazoisha</p>';
             else {
-                let html = '<table><thead><tr><th>Bidhaa</th><th>Stock</th><th>Alert Level</th><th>Action</th></tr></thead><tbody>';
+                let html = '<tr><thead><tr><th>Bidhaa</th><th>Stock</th><th>Alert Level</th><th>Action</th><tr></thead><tbody>';
                 low.forEach(p => {
                     html += `<tr>
                         <td><strong>${p.name}</strong></td>
@@ -593,7 +651,7 @@
                         <td><button onclick="quickAddStock(${p.id})" class="btn-warning">➕ Ongeza Stock</button></td>
                     </tr>`;
                 });
-                html += '</tbody></table>';
+                html += '</tbody><tr>';
                 div.innerHTML = html;
             }
         }
@@ -659,6 +717,93 @@
             `;
         }
 
+        // User Management Functions (Admin only)
+        function loadUsers() {
+            if (currentUser?.role !== 'admin') return;
+            const container = document.getElementById('usersList');
+            if (users.length === 0) {
+                container.innerHTML = '<p>Hakuna wafanyakazi wengine. Ongeza mfanyakazi kwanza.</p>';
+                return;
+            }
+            let html = '<table><thead><tr><th>Jina</th><th>Email</th><th>Simu</th><th>Nafasi</th><th>Kitendo</th></tr></thead><tbody>';
+            users.forEach((u, idx) => {
+                if (u.email !== 'malabamalaba26@gmail.com') { // Don't show current admin in delete list
+                    html += `<tr>
+                        <td><strong>${u.name}</strong></td>
+                        <td>${u.email}</td>
+                        <td>${u.phone || '-'}</td>
+                        <td>${u.role === 'admin' ? '👑 Admin' : '👤 Cashier'}</td>
+                        <td><button onclick="deleteUser(${idx})" class="btn-danger">🗑️ Futa</button></td>
+                    </tr>`;
+                }
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function createUser() {
+            if (currentUser?.role !== 'admin') {
+                alert('Admin pekee ndio anaweza kuongeza wafanyakazi!');
+                return;
+            }
+            
+            const name = document.getElementById('userFullName').value.trim();
+            const email = document.getElementById('userEmail').value.trim();
+            const phone = document.getElementById('userPhone').value.trim();
+            const role = document.getElementById('userRoleSelect').value;
+            const password = document.getElementById('userPassword').value;
+            
+            if (!name) {
+                alert('Tafadhali jaza jina la mfanyakazi');
+                return;
+            }
+            if (!email) {
+                alert('Tafadhali jaza barua pepe (email)');
+                return;
+            }
+            if (!password) {
+                alert('Tafadhali jaza nenosiri (password)');
+                return;
+            }
+            if (password.length < 4) {
+                alert('Nenosiri lazima iwe na herufi 4 au zaidi');
+                return;
+            }
+            
+            if (users.find(u => u.email === email)) {
+                alert(`Email "${email}" tayari ipo! Tumia email tofauti.`);
+                return;
+            }
+            
+            users.push({
+                id: Date.now(),
+                name: name,
+                email: email,
+                phone: phone,
+                role: role,
+                password: password
+            });
+            saveData();
+            
+            showSuccess('userSuccess', `✅ Mfanyakazi ${name} ameongezwa kikamilifu!`);
+            
+            document.getElementById('userFullName').value = '';
+            document.getElementById('userEmail').value = '';
+            document.getElementById('userPhone').value = '';
+            document.getElementById('userPassword').value = '';
+            
+            loadUsers();
+        }
+
+        function deleteUser(idx) {
+            if (confirm('Futa mfanyakazi huyu?')) {
+                users.splice(idx, 1);
+                saveData();
+                loadUsers();
+                showSuccess('userSuccess', '✅ Mfanyakazi amefutwa!');
+            }
+        }
+
         // Receipt Functions
         function showReceipt(sale) {
             const now = new Date();
@@ -677,7 +822,7 @@
                     <p><strong>Mteja:</strong> ${sale.customerName}</p>
                     ${sale.customerPhone ? `<p><strong>Simu:</strong> ${sale.customerPhone}</p>` : ''}
                     <hr>
-                    <table style="width:100%"><thead><tr><th>Bidhaa</th><th>Idadi</th><th>Bei</th><th>Jumla</th></tr></thead>
+                    <table style="width:100%"><thead><tr><th>Bidhaa</th><th>Idadi</th><th>Bei</th><th>Jumla</th><tr></thead>
                     <tbody>${sale.items.map(i => `<tr>
                         <td><strong>${i.productName}</strong></td>
                         <td style="text-align:center;">${i.quantity}</td>
@@ -731,6 +876,7 @@
             if (tab === 'products') { displayProducts(); }
             if (tab === 'customers') { displayCustomers(); }
             if (tab === 'categories') { loadCategories(); }
+            if (tab === 'users' && currentUser?.role === 'admin') { loadUsers(); }
         }
 
         // Initialize
@@ -740,6 +886,7 @@
         loadDashboard();
         checkLowStock();
         loadStockSummary();
+        if (currentUser?.role === 'admin') loadUsers();
     </script>
 </body>
 </html>

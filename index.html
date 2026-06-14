@@ -19,7 +19,7 @@
         .dashboard { display: none; }
         .navbar { background: white; padding: 15px 25px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .navbar h3 { color: #1a73e8; }
-        .user-info { display: flex; align-items: center; gap: 15px; }
+        .user-info { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
         .role-badge { background: #1a73e8; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; }
         .logout-btn { background: #dc2626; color: white; border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; }
         
@@ -103,8 +103,8 @@
         <div class="login-card">
             <h2>🏪 SMART POS</h2>
             <h4>Shinyanga, Tanzania</h4>
-            <input type="email" id="email" placeholder="Barua pepe" value="malabamalaba26@gmail.com">
-            <input type="password" id="password" placeholder="Nenosiri" value="Malaba@03">
+            <input type="email" id="email" placeholder="Barua pepe">
+            <input type="password" id="password" placeholder="Nenosiri">
             <button onclick="login()">INGIA MFUMO</button>
             <div id="loginError" class="error"></div>
         </div>
@@ -138,7 +138,6 @@
                 <button class="tab-btn admin-only" onclick="showTab('users')">👤 Wafanyakazi</button>
             </div>
 
-            <!-- Products Tab -->
             <div id="productsTab" class="tab-content active">
                 <div class="card">
                     <h3>➕ Ongeza Bidhaa</h3>
@@ -165,7 +164,6 @@
                 </div>
             </div>
 
-            <!-- Categories Tab -->
             <div id="categoriesTab" class="tab-content">
                 <div class="card">
                     <h3>➕ Ongeza Category</h3>
@@ -179,7 +177,6 @@
                 </div>
             </div>
 
-            <!-- Customers Tab -->
             <div id="customersTab" class="tab-content">
                 <div class="card">
                     <h3>➕ Ongeza Mteja</h3>
@@ -200,7 +197,6 @@
                 </div>
             </div>
 
-            <!-- Sales Tab - HAKUNA WAFANYAKAZI HAPA -->
             <div id="salesTab" class="tab-content">
                 <div class="card">
                     <h3>🛒 Rekodi Mauzo</h3>
@@ -233,7 +229,6 @@
                 </div>
             </div>
 
-            <!-- Stock Tab - HAKUNA WAFANYAKAZI HAPA -->
             <div id="stockTab" class="tab-content">
                 <div class="card">
                     <h3>⚠️ Bidhaa Zinazoisha (Low Stock Alert)</h3>
@@ -258,7 +253,6 @@
                 </div>
             </div>
 
-            <!-- Users Tab (Admin only) - FORM NA ORODHA YA WAFANYAKAZI IPO HAPA TU -->
             <div id="usersTab" class="tab-content admin-only">
                 <div class="card">
                     <h3>➕ Ongeza Mfanyakazi</h3>
@@ -281,15 +275,12 @@
                 </div>
                 <div class="card">
                     <h3>📋 Orodha ya Wafanyakazi</h3>
-                    <div class="table-responsive">
-                        <div id="usersList"></div>
-                    </div>
+                    <div class="table-responsive"><div id="usersList"></div></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Receipt Modal -->
     <div id="receiptModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeReceipt()">&times;</span>
@@ -302,144 +293,183 @@
     </div>
 
     <script>
-        let products = JSON.parse(localStorage.getItem('products')) || [];
-        let categories = JSON.parse(localStorage.getItem('categories')) || ['Vyakula', 'Dawa', 'Nguo', 'Vifaa', 'Vinywaji', 'Vipodozi', 'Electronics'];
-        let customers = JSON.parse(localStorage.getItem('customers')) || [];
-        let sales = JSON.parse(localStorage.getItem('sales')) || [];
-        let users = JSON.parse(localStorage.getItem('users')) || [];
+        // ============ BACKEND URL ============
+        const BASE_URL = 'https://pos-backend-yxvv.onrender.com';
+        
+        let products = [];
+        let categories = [];
+        let customers = [];
+        let sales = [];
+        let users = [];
         let currentUser = null;
         let lastReceipt = null;
+        let authToken = null;
         const STORE_PHONE = '0763387403';
-
-        function saveData() {
-            localStorage.setItem('products', JSON.stringify(products));
-            localStorage.setItem('categories', JSON.stringify(categories));
-            localStorage.setItem('customers', JSON.stringify(customers));
-            localStorage.setItem('sales', JSON.stringify(sales));
-            localStorage.setItem('users', JSON.stringify(users));
-        }
-
-        if (users.length === 0) {
-            users.push({ id: Date.now(), name: 'Malaba Maziwa', email: 'malabamalaba26@gmail.com', phone: '0763387403', role: 'admin', password: 'Malaba@03' });
-            saveData();
-        }
-
-        function checkSavedSession() {
-            const savedUserEmail = localStorage.getItem('currentUserEmail');
-            if (savedUserEmail) {
-                const user = users.find(u => u.email === savedUserEmail);
-                if (user) { currentUser = user; return true; }
-                else { localStorage.removeItem('currentUserEmail'); }
+        
+        async function apiCall(endpoint, method = 'GET', data = null) {
+            try {
+                const options = {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' }
+                };
+                if (authToken) options.headers['Authorization'] = `Bearer ${authToken}`;
+                if (data) options.body = JSON.stringify(data);
+                const response = await fetch(`${BASE_URL}${endpoint}`, options);
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                console.error('API Error:', error);
+                return { success: false, message: error.message };
             }
-            return false;
         }
-
-        function login() {
+        
+        // ============ LOGIN ============
+        async function login() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const user = users.find(u => u.email === email && u.password === password);
             
-            if (user) {
-                currentUser = user;
-                localStorage.setItem('currentUserEmail', user.email);
+            const result = await apiCall('/api/auth/login', 'POST', { email, password });
+            
+            if (result.access_token) {
+                authToken = result.access_token;
+                currentUser = result.user;
+                localStorage.setItem('authToken', authToken);
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
-                document.getElementById('userName').innerHTML = user.name;
-                document.getElementById('userRole').innerHTML = user.role === 'admin' ? '👑 Admin' : '👤 Cashier';
+                document.getElementById('userName').innerHTML = currentUser.name;
+                document.getElementById('userRole').innerHTML = currentUser.role === 'admin' ? '👑 Admin' : '👤 Cashier';
                 
-                if (user.role !== 'admin') {
+                if (currentUser.role !== 'admin') {
                     document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
                 } else {
                     document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
-                    loadUsers();
                 }
                 
+                await loadAllData();
                 loadDashboard();
-                loadCategories();
-                displayProducts();
-                displayCustomers();
-                checkLowStock();
-                loadStockSummary();
             } else {
-                document.getElementById('loginError').innerHTML = 'Email au password si sahihi!';
+                document.getElementById('loginError').innerHTML = result.message || 'Email au password si sahihi!';
                 document.getElementById('loginError').style.display = 'block';
                 setTimeout(() => { document.getElementById('loginError').style.display = 'none'; }, 3000);
             }
         }
-
+        
         function logout() {
             currentUser = null;
-            localStorage.removeItem('currentUserEmail');
+            authToken = null;
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('currentUser');
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
         }
-
-        function loadDashboard() {
-            const today = new Date().toDateString();
-            const todaySales = sales.filter(s => new Date(s.date).toDateString() === today);
-            document.getElementById('todayRevenue').innerText = todaySales.reduce((sum, s) => sum + s.total, 0).toLocaleString();
-            document.getElementById('todayProfit').innerText = todaySales.reduce((sum, s) => sum + (s.profit || 0), 0).toLocaleString();
-            const stockValue = products.reduce((sum, p) => sum + (p.stock * p.sellingPrice), 0);
-            document.getElementById('stockValue').innerText = stockValue.toLocaleString();
-            const totalCost = products.reduce((sum, p) => sum + (p.stock * (p.costPrice || 0)), 0);
-            document.getElementById('expectedProfit').innerText = (stockValue - totalCost).toLocaleString();
-            document.getElementById('lowStockCount').innerText = products.filter(p => p.stock <= p.alertLevel).length;
+        
+        // ============ LOAD ALL DATA FROM BACKEND ============
+        async function loadAllData() {
+            try {
+                const productsRes = await apiCall('/api/products');
+                if (Array.isArray(productsRes)) products = productsRes;
+                
+                const categoriesRes = await apiCall('/api/categories');
+                if (Array.isArray(categoriesRes)) categories = categoriesRes;
+                
+                const customersRes = await apiCall('/api/customers');
+                if (Array.isArray(customersRes)) customers = customersRes;
+                
+                const salesRes = await apiCall('/api/sales');
+                if (Array.isArray(salesRes)) sales = salesRes;
+                
+                if (currentUser?.role === 'admin') {
+                    const usersRes = await apiCall('/api/users');
+                    if (Array.isArray(usersRes)) users = usersRes;
+                    loadUsers();
+                }
+                
+                loadCategoriesUI();
+                displayProducts();
+                displayCustomers();
+                checkLowStock();
+                loadStockSummary();
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
         }
-
-        function loadCategories() {
+        
+        async function loadDashboard() {
+            const data = await apiCall('/api/dashboard');
+            document.getElementById('todayRevenue').innerText = (data.todayRevenue || 0).toLocaleString();
+            document.getElementById('todayProfit').innerText = (data.todayProfit || 0).toLocaleString();
+            document.getElementById('stockValue').innerText = (data.stockValue || 0).toLocaleString();
+            document.getElementById('expectedProfit').innerText = (data.expectedProfit || 0).toLocaleString();
+            document.getElementById('lowStockCount').innerText = data.lowStockCount || 0;
+        }
+        
+        // ============ CATEGORIES ============
+        async function loadCategoriesUI() {
             const container = document.getElementById('categoriesList');
             const categorySelect = document.getElementById('categorySelect');
             const filterSelect = document.getElementById('filterCategory');
             const saleCategory = document.getElementById('saleCategory');
             const stockCategory = document.getElementById('stockCategory');
             
-            if (categories.length === 0) { container.innerHTML = '<p>Hakuna categories. Ongeza category kwanza.</p>'; return; }
+            if (!categories || categories.length === 0) {
+                container.innerHTML = '<p>Hakuna categories. Ongeza category kwanza.</p>';
+                return;
+            }
             
             let html = '<table><thead><tr><th>Jina la Category</th><th>Kitendo</th></tr></thead><tbody>';
             let options = '<option value="">Chagua Category</option>';
+            
             categories.forEach((cat, idx) => {
+                const categoryName = typeof cat === 'object' ? cat.name : cat;
                 html += `<tr>
-                    <td><strong>📁 ${cat}</strong></td>
-                    <td><button onclick="deleteCategory(${idx})" class="btn-danger">🗑️ Futa</button></td>
+                    <td><strong>📁 ${escapeHtml(categoryName)}</strong></td>
+                    <td><button onclick="deleteCategory('${escapeHtml(categoryName)}')" class="btn-danger">🗑️ Futa</button></td>
                 </tr>`;
-                options += `<option value="${cat}">${cat}</option>`;
+                options += `<option value="${escapeHtml(categoryName)}">${escapeHtml(categoryName)}</option>`;
             });
             html += '</tbody></table>';
             container.innerHTML = html;
+            
             categorySelect.innerHTML = options;
             filterSelect.innerHTML = '<option value="all">Category Zote</option>' + options;
             saleCategory.innerHTML = '<option value="">Chagua Category</option>' + options;
             stockCategory.innerHTML = '<option value="">Chagua Category</option>' + options;
         }
-
-        function addCategory() {
+        
+        async function addCategory() {
             const name = document.getElementById('newCategoryName').value.trim();
             if (!name) return alert('Weka jina la category');
             if (categories.includes(name)) return alert('Category ipo tayari');
-            categories.push(name);
-            saveData();
-            loadCategories();
-            document.getElementById('newCategoryName').value = '';
-            showSuccess('categorySuccess', '✅ Category imeongezwa!');
-        }
-
-        function deleteCategory(idx) {
-            if (confirm(`Futa category "${categories[idx]}"?`)) {
-                categories.splice(idx, 1);
-                saveData();
-                loadCategories();
-                displayProducts();
-                loadDashboard();
+            
+            const result = await apiCall('/api/categories', 'POST', { name });
+            if (result.success) {
+                await loadAllData();
+                document.getElementById('newCategoryName').value = '';
+                showSuccess('categorySuccess', '✅ Category imeongezwa!');
             }
         }
-
+        
+        async function deleteCategory(name) {
+            if (confirm(`Futa category "${name}"?`)) {
+                await apiCall(`/api/categories/${encodeURIComponent(name)}`, 'DELETE');
+                await loadAllData();
+            }
+        }
+        
+        // ============ PRODUCTS ============
         document.getElementById('productName')?.addEventListener('input', function() {
-            if (this.value) document.getElementById('productSku').value = this.value.substring(0, 3).toUpperCase() + '-' + Math.floor(Math.random() * 10000);
+            if (this.value) {
+                document.getElementById('productSku').value = this.value.substring(0, 3).toUpperCase() + '-' + Math.floor(Math.random() * 10000);
+            }
         });
-
-        function createProduct() {
+        
+        async function createProduct() {
             const name = document.getElementById('productName').value.trim();
-            const sku = document.getElementById('productSku').value;
+            const sku = document.getElementById('productSku').value || name.substring(0, 3).toUpperCase() + '-' + Date.now();
             const category = document.getElementById('categorySelect').value;
             const stock = parseInt(document.getElementById('productStock').value) || 0;
             const costPrice = parseFloat(document.getElementById('costPrice').value) || 0;
@@ -451,123 +481,130 @@
             if (costPrice >= sellingPrice) return alert('Bei ya kununulia haiwezi kuwa kubwa au sawa na bei ya kuuza!');
             if (!category) return alert('Chagua category');
             
-            products.push({ id: Date.now(), name, sku, category, stock, costPrice, sellingPrice, alertLevel });
-            saveData();
-            showSuccess('productSuccess', '✅ Bidhaa imeongezwa!');
-            document.getElementById('productName').value = '';
-            document.getElementById('productSku').value = '';
-            document.getElementById('productStock').value = '0';
-            document.getElementById('costPrice').value = '';
-            document.getElementById('sellingPrice').value = '';
-            displayProducts();
-            loadDashboard();
-            checkLowStock();
-            loadStockSummary();
+            const result = await apiCall('/api/products', 'POST', {
+                name, sku, category, stock, costPrice, sellingPrice, alertLevel
+            });
+            
+            if (result.success) {
+                showSuccess('productSuccess', '✅ Bidhaa imeongezwa!');
+                document.getElementById('productName').value = '';
+                document.getElementById('productSku').value = '';
+                document.getElementById('productStock').value = '0';
+                document.getElementById('costPrice').value = '';
+                document.getElementById('sellingPrice').value = '';
+                await loadAllData();
+            }
         }
-
+        
         function displayProducts() {
             const filter = document.getElementById('filterCategory').value;
             const filtered = filter === 'all' ? products : products.filter(p => p.category === filter);
             const container = document.getElementById('productsList');
-            if (filtered.length === 0) { container.innerHTML = '<p style="text-align:center; padding:40px;">📦 Hakuna bidhaa. Ongeza bidhaa kwanza.</p>'; return; }
+            
+            if (!filtered || filtered.length === 0) {
+                container.innerHTML = '<p style="text-align:center; padding:40px;">📦 Hakuna bidhaa. Ongeza bidhaa kwanza.</p>';
+                return;
+            }
             
             let html = '<div class="products-grid">';
             filtered.forEach(p => {
                 const isLow = p.stock <= p.alertLevel;
-                const profitPerUnit = p.sellingPrice - (p.costPrice || 0);
-                html += `<div class="product-card">
-                    <h4>${escapeHtml(p.name)}</h4>
-                    <div class="price">TZS ${p.sellingPrice.toLocaleString()}</div>
-                    <div class="stock ${isLow ? 'low' : ''}">📦 Stock: ${p.stock} ${isLow ? '⚠️ Inazidi kuisha!' : ''}</div>
-                    <div style="font-size:12px; color:#666;">SKU: ${p.sku} | Category: ${p.category}</div>
-                    <div style="font-size:12px; color:#10b981;">💰 Faida/Unit: TZS ${profitPerUnit.toLocaleString()}</div>
-                    <div class="actions">
-                        <button onclick="editProduct(${p.id})" class="btn-warning btn-sm">✏️ Badilisha Bei</button>
-                        <button onclick="deleteProduct(${p.id})" class="btn-danger btn-sm">🗑️ Futa</button>
+                const profitPerUnit = (p.sellingPrice || 0) - (p.costPrice || 0);
+                html += `
+                    <div class="product-card">
+                        <h4>${escapeHtml(p.name)}</h4>
+                        <div class="price">TZS ${(p.sellingPrice || 0).toLocaleString()}</div>
+                        <div class="stock ${isLow ? 'low' : ''}">📦 Stock: ${p.stock || 0} ${isLow ? '⚠️ Inazidi kuisha!' : ''}</div>
+                        <div style="font-size:12px; color:#666;">SKU: ${p.sku || '-'} | Category: ${p.category || '-'}</div>
+                        <div style="font-size:12px; color:#10b981;">💰 Faida/Unit: TZS ${profitPerUnit.toLocaleString()}</div>
+                        <div class="actions">
+                            <button onclick="editProduct(${p.id})" class="btn-warning btn-sm">✏️ Badilisha Bei</button>
+                            <button onclick="deleteProduct(${p.id})" class="btn-danger btn-sm">🗑️ Futa</button>
+                        </div>
                     </div>
-                </div>`;
+                `;
             });
             html += '</div>';
             container.innerHTML = html;
         }
-
-        function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
-
-        function editProduct(id) {
+        
+        async function editProduct(id) {
             const product = products.find(p => p.id === id);
             if (!product) return;
             const newPrice = prompt('Ingiza bei mpya ya kuuza (TZS):', product.sellingPrice);
             if (newPrice && parseFloat(newPrice) !== product.sellingPrice) {
                 if (parseFloat(newPrice) < product.costPrice) return alert('Bei mpya haiwezi kuwa chini ya bei ya kununulia!');
-                product.sellingPrice = parseFloat(newPrice);
-                saveData();
-                displayProducts();
-                loadStockSummary();
+                await apiCall(`/api/products/${id}`, 'PUT', { sellingPrice: parseFloat(newPrice) });
+                await loadAllData();
                 alert('✅ Bei imebadilishwa kikamilifu!');
             }
         }
-
-        function deleteProduct(id) {
+        
+        async function deleteProduct(id) {
             if (confirm('Futa bidhaa hii?')) {
-                products = products.filter(p => p.id !== id);
-                saveData();
-                displayProducts();
-                loadDashboard();
-                checkLowStock();
-                loadStockSummary();
+                await apiCall(`/api/products/${id}`, 'DELETE');
+                await loadAllData();
                 alert('✅ Bidhaa imefutwa!');
             }
         }
-
+        
+        // ============ CUSTOMERS ============
         function displayCustomers() {
             const container = document.getElementById('customersList');
-            if (customers.length === 0) { container.innerHTML = '<p>Hakuna wateja. Ongeza mteja kwanza.</p>'; return; }
-            let html = '</table><thead><tr><th>Jina</th><th>Simu</th><th>Email</th><th>Anwani</th><th>Kitendo</th></tr></thead><tbody>';
-            customers.forEach((c, idx) => {
+            if (!customers || customers.length === 0) {
+                container.innerHTML = '<p style="text-align:center; padding:20px;">Hakuna wateja. Ongeza mteja kwanza.</p>';
+                return;
+            }
+            
+            let html = `<table><thead><tr><th>Jina Kamili</th><th>Namba ya Simu</th><th>Barua pepe</th><th>Anwani</th><th>Kitendo</th></tr></thead><tbody>`;
+            customers.forEach(c => {
                 html += `<tr>
-                    <td><strong>${c.name}</strong></td>
+                    <td><strong>${escapeHtml(c.name)}</strong></td>
                     <td>${c.phone || '-'}</td>
                     <td>${c.email || '-'}</td>
                     <td>${c.address || '-'}</td>
-                    <td><button onclick="deleteCustomer(${idx})" class="btn-danger">🗑️ Futa</button></td>
+                    <td><button onclick="deleteCustomer(${c.id})" class="btn-danger btn-sm">🗑️ Futa</button></td>
                 </tr>`;
             });
-            html += '</tbody></table>';
+            html += `</tbody></td>`;
             container.innerHTML = html;
             
             const saleSelect = document.getElementById('saleCustomerSelect');
             let options = '<option value="">Mteja wa Kawaida</option>';
-            customers.forEach(c => { options += `<option value="${c.name}" data-phone="${c.phone || ''}">${c.name} - ${c.phone || ''}</option>`; });
+            customers.forEach(c => {
+                options += `<option value="${escapeHtml(c.name)}" data-phone="${c.phone || ''}">${escapeHtml(c.name)} - ${c.phone || ''}</option>`;
+            });
             saleSelect.innerHTML = options;
-            saleSelect.onchange = function() { document.getElementById('saleCustomerPhone').value = this.options[this.selectedIndex]?.dataset?.phone || ''; };
+            
+            saleSelect.onchange = function() {
+                document.getElementById('saleCustomerPhone').value = this.options[this.selectedIndex]?.dataset?.phone || '';
+            };
         }
-
-        function addCustomer() {
+        
+        async function addCustomer() {
             const name = document.getElementById('customerName').value.trim();
             const phone = document.getElementById('customerPhone').value.trim();
             const email = document.getElementById('customerEmail').value.trim();
             const address = document.getElementById('customerAddress').value.trim();
             if (!name) return alert('Weka jina la mteja');
-            customers.push({ id: Date.now(), name, phone, email, address });
-            saveData();
+            
+            await apiCall('/api/customers', 'POST', { name, phone, email, address });
             showSuccess('customerSuccess', '✅ Mteja ameongezwa!');
             document.getElementById('customerName').value = '';
             document.getElementById('customerPhone').value = '';
             document.getElementById('customerEmail').value = '';
             document.getElementById('customerAddress').value = '';
-            displayCustomers();
-            loadDashboard();
+            await loadAllData();
         }
-
-        function deleteCustomer(idx) {
-            if (confirm(`Futa mteja "${customers[idx].name}"?`)) {
-                customers.splice(idx, 1);
-                saveData();
-                displayCustomers();
-                loadDashboard();
+        
+        async function deleteCustomer(id) {
+            if (confirm('Futa mteja huyu?')) {
+                await apiCall(`/api/customers/${id}`, 'DELETE');
+                await loadAllData();
             }
         }
-
+        
+        // ============ SALES ============
         function loadProductsForSale() {
             const category = document.getElementById('saleCategory').value;
             const select = document.getElementById('saleProduct');
@@ -575,12 +612,15 @@
             const filtered = products.filter(p => p.category === category && p.stock > 0);
             if (filtered.length === 0) { select.innerHTML = '<option value="">Hakuna bidhaa katika category hii</option>'; return; }
             let html = '<option value="">Chagua Bidhaa</option>';
-            filtered.forEach(p => { html += `<option value="${p.id}" data-price="${p.sellingPrice}" data-cost="${p.costPrice}">${p.name} - TZS ${p.sellingPrice.toLocaleString()} (Stock: ${p.stock})</option>`; });
+            filtered.forEach(p => {
+                html += `<option value="${p.id}" data-price="${p.sellingPrice}" data-cost="${p.costPrice}">${escapeHtml(p.name)} - TZS ${(p.sellingPrice || 0).toLocaleString()} (Stock: ${p.stock})</option>`;
+            });
             select.innerHTML = html;
         }
-
+        
         function updateSaleInfo() {
-            const opt = document.getElementById('saleProduct').options[document.getElementById('saleProduct').selectedIndex];
+            const select = document.getElementById('saleProduct');
+            const opt = select.options[select.selectedIndex];
             document.getElementById('productBasePrice').value = opt?.dataset?.price || 0;
             document.getElementById('customerPrice').value = '';
             document.getElementById('priceValidationMsg').innerHTML = '';
@@ -588,7 +628,7 @@
             document.getElementById('quantity').value = 1;
             calculateTotal();
         }
-
+        
         function validateCustomerPrice() {
             const basePrice = parseFloat(document.getElementById('productBasePrice').value) || 0;
             const customerPrice = parseFloat(document.getElementById('customerPrice').value) || 0;
@@ -599,17 +639,19 @@
             else { msgDiv.innerHTML = '<span class="price-high">💰 Bei IKO JUU! Unaweza kuuza kwa faida zaidi.</span>'; document.getElementById('saleButton').disabled = false; }
             calculateTotal();
         }
-
+        
         function calculateTotal() {
             const customerPrice = parseFloat(document.getElementById('customerPrice').value) || 0;
             const qty = parseInt(document.getElementById('quantity').value) || 0;
             const opt = document.getElementById('saleProduct').options[document.getElementById('saleProduct').selectedIndex];
             const cost = parseFloat(opt?.dataset?.cost || 0);
-            document.getElementById('totalAmount').value = (customerPrice * qty).toLocaleString();
-            document.getElementById('profitAmount').value = ((customerPrice - cost) * qty).toLocaleString();
+            const total = customerPrice * qty;
+            const profit = (customerPrice - cost) * qty;
+            document.getElementById('totalAmount').value = total.toLocaleString();
+            document.getElementById('profitAmount').value = profit.toLocaleString();
         }
-
-        function recordSale() {
+        
+        async function recordSale() {
             const productId = parseInt(document.getElementById('saleProduct').value);
             const product = products.find(p => p.id === productId);
             if (!product) return alert('Chagua bidhaa');
@@ -620,47 +662,71 @@
             const customerSelect = document.getElementById('saleCustomerSelect');
             const customerName = customerSelect.value === '' ? 'Mteja wa Kawaida' : (customerSelect.options[customerSelect.selectedIndex]?.text.split(' - ')[0] || 'Mteja');
             const customerPhone = document.getElementById('saleCustomerPhone').value;
+            
             if (customerPrice < product.costPrice) return alert('Bei ya mteja ipo chini ya bei ya kununulia!');
             if (product.stock < qty) return alert(`Stock haitoshi! Zipo ${product.stock} tu.`);
+            
             const profit = (customerPrice - product.costPrice) * qty;
-            product.stock -= qty;
             const invoice = 'INV-' + Date.now();
-            const saleRecord = { id: Date.now(), invoice, customerName, customerPhone, items: [{ productName: product.name, quantity: qty, price: customerPrice, total }], total, profit, payment: paymentMethod, date: new Date().toISOString() };
-            sales.push(saleRecord);
-            saveData();
-            lastReceipt = saleRecord;
-            showSuccess('saleSuccess', `✅ Mauzo yamerekodiwa! Invoice: ${invoice} | Faida: TZS ${profit.toLocaleString()}`);
-            document.getElementById('quantity').value = 1;
-            document.getElementById('customerPrice').value = '';
-            document.getElementById('priceValidationMsg').innerHTML = '';
-            document.getElementById('saleButton').disabled = true;
-            displayProducts();
-            loadDashboard();
-            checkLowStock();
-            loadStockSummary();
-            showReceipt(saleRecord);
-            if (customerPhone && customerPhone.trim() !== '') alert(`📱 SMS imetumwa kwa ${customerPhone}\n\nInvoice: ${invoice}\nTotal: TZS ${total.toLocaleString()}`);
+            const saleRecord = {
+                invoice, customerName, customerPhone,
+                items: [{ productName: product.name, quantity: qty, price: customerPrice, total }],
+                total, profit, payment: paymentMethod,
+                date: new Date().toISOString()
+            };
+            
+            const result = await apiCall('/api/sales', 'POST', saleRecord);
+            if (result.success) {
+                await apiCall('/api/products/stock', 'POST', { productId: product.id, quantity: qty });
+                
+                lastReceipt = saleRecord;
+                showSuccess('saleSuccess', `✅ Mauzo yamerekodiwa! Invoice: ${invoice} | Faida: TZS ${profit.toLocaleString()}`);
+                
+                document.getElementById('quantity').value = 1;
+                document.getElementById('customerPrice').value = '';
+                document.getElementById('priceValidationMsg').innerHTML = '';
+                document.getElementById('saleButton').disabled = true;
+                
+                await loadAllData();
+                showReceipt(saleRecord);
+                
+                if (customerPhone && customerPhone.trim() !== '') {
+                    alert(`📱 SMS imetumwa kwa ${customerPhone}\n\nInvoice: ${invoice}\nTotal: TZS ${total.toLocaleString()}`);
+                }
+            }
         }
-
+        
+        // ============ STOCK ============
         function checkLowStock() {
             const low = products.filter(p => p.stock <= p.alertLevel);
             document.getElementById('lowStockCount').innerText = low.length;
             const div = document.getElementById('lowStockList');
             if (low.length === 0) { div.innerHTML = '<p>✅ Hakuna bidhaa zinazoisha. Stock zote ni nzuri.</p>'; return; }
             let html = '<table><thead><tr><th>Bidhaa</th><th>Stock</th><th>Alert Level</th><th>Action</th></tr></thead><tbody>';
-            low.forEach(p => { html += `<tr>
-                <td><strong>${p.name}</strong></td>
-                <td class="low-stock">${p.stock} tu</td>
-                <td>${p.alertLevel}</td>
-                <td><button onclick="quickAddStock(${p.id})" class="btn-warning btn-sm">➕ Ongeza Stock</button></td>
-            </tr>`; });
+            low.forEach(p => {
+                html += `<tr>
+                    <td><strong>${escapeHtml(p.name)}</strong></td>
+                    <td class="low-stock">${p.stock} tu</td>
+                    <td>${p.alertLevel}</td>
+                    <td><button onclick="quickAddStock(${p.id})" class="btn-warning btn-sm">➕ Ongeza Stock</button></td>
+                </tr>`;
+            });
             html += '</tbody></table>';
             div.innerHTML = html;
         }
-
-        function quickAddStock(id) { const qty = prompt('Kiasi cha kuongeza stock:'); if (qty && parseInt(qty) > 0) addStockToProduct(id, parseInt(qty)); }
-        function addStockToProduct(id, qty) { const p = products.find(p => p.id === id); if (p) { p.stock += qty; saveData(); displayProducts(); checkLowStock(); loadStockSummary(); alert(`✅ Stock imeongezeka! Sasa stock: ${p.stock}`); } }
-
+        
+        function quickAddStock(id) {
+            const qty = prompt('Kiasi cha kuongeza stock:');
+            if (qty && parseInt(qty) > 0) addStockToProduct(id, parseInt(qty));
+        }
+        
+        async function addStockToProduct(id, qty) {
+            await apiCall('/api/products/stock', 'POST', { productId: id, quantity: qty });
+            await loadAllData();
+            const p = products.find(p => p.id === id);
+            if (p) alert(`✅ Stock imeongezeka! Sasa stock: ${p.stock}`);
+        }
+        
         function loadProductsForStock() {
             const cat = document.getElementById('stockCategory').value;
             const select = document.getElementById('stockProduct');
@@ -668,89 +734,135 @@
             const filtered = products.filter(p => p.category === cat);
             if (filtered.length === 0) { select.innerHTML = '<option value="">Hakuna bidhaa katika category hii</option>'; return; }
             let html = '<option value="">Chagua Bidhaa</option>';
-            filtered.forEach(p => { html += `<option value="${p.id}">${p.name} (Stock: ${p.stock})</option>`; });
+            filtered.forEach(p => {
+                html += `<option value="${p.id}">${escapeHtml(p.name)} (Stock: ${p.stock})</option>`;
+            });
             select.innerHTML = html;
         }
-
-        function addStock() {
+        
+        async function addStock() {
             const productId = parseInt(document.getElementById('stockProduct').value);
             const product = products.find(p => p.id === productId);
             if (!product) return alert('Chagua bidhaa');
             const qty = parseInt(document.getElementById('addStockQty').value);
             if (!qty || qty <= 0) return alert('Weka kiasi sahihi');
             const newPrice = parseFloat(document.getElementById('newPrice').value);
-            product.stock += qty;
-            if (newPrice && newPrice > 0) { if (newPrice < product.costPrice) return alert('Bei mpya haiwezi kuwa chini ya cost!'); product.sellingPrice = newPrice; }
-            saveData();
-            showSuccess('stockAddSuccess', `✅ Stock imeongezeka! Sasa stock: ${product.stock}`);
+            
+            await apiCall('/api/products/stock', 'POST', { 
+                productId, 
+                quantity: qty, 
+                newPrice: newPrice > 0 ? newPrice : null 
+            });
+            
+            showSuccess('stockAddSuccess', `✅ Stock imeongezeka!`);
             document.getElementById('addStockQty').value = '';
             document.getElementById('newPrice').value = '';
-            displayProducts();
-            checkLowStock();
-            loadStockSummary();
+            await loadAllData();
         }
-
+        
         function loadStockSummary() {
-            const totalValue = products.reduce((sum, p) => sum + (p.stock * p.sellingPrice), 0);
-            const totalCost = products.reduce((sum, p) => sum + (p.stock * (p.costPrice || 0)), 0);
+            const totalValue = products.reduce((sum, p) => sum + ((p.stock || 0) * (p.sellingPrice || 0)), 0);
+            const totalCost = products.reduce((sum, p) => sum + ((p.stock || 0) * (p.costPrice || 0)), 0);
             const expectedProfit = totalValue - totalCost;
             document.getElementById('expectedProfit').innerText = expectedProfit.toLocaleString();
-            document.getElementById('stockSummary').innerHTML = `<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
-                <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; text-align: center;"><strong>Jumla ya Bidhaa</strong><br><span style="font-size: 24px; font-weight: bold; color: #10b981;">${products.length}</span></div>
-                <div style="background: #eff6ff; padding: 15px; border-radius: 8px; text-align: center;"><strong>Thamani ya Stock</strong><br><span style="font-size: 24px; font-weight: bold; color: #1a73e8;">TZS ${totalValue.toLocaleString()}</span></div>
-                <div style="background: #fef3c7; padding: 15px; border-radius: 8px; text-align: center;"><strong>Gharama ya Stock</strong><br><span style="font-size: 24px; font-weight: bold; color: #f59e0b;">TZS ${totalCost.toLocaleString()}</span></div>
-                <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 15px; border-radius: 8px; text-align: center; color: white;"><strong>💰 Faida Inayotarajiwa</strong><br><span style="font-size: 24px; font-weight: bold;">TZS ${expectedProfit.toLocaleString()}</span></div>
-            </div><p style="margin-top: 15px; text-align: center; color: #666;">Faida Halisi kutoka kwa Mauzo Yote: TZS ${sales.reduce((sum, s) => sum + (s.profit || 0), 0).toLocaleString()}</p>`;
+            const totalSalesProfit = sales.reduce((sum, s) => sum + (s.profit || 0), 0);
+            document.getElementById('stockSummary').innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; text-align: center;">
+                        <strong>Jumla ya Bidhaa</strong><br>
+                        <span style="font-size: 24px; font-weight: bold; color: #10b981;">${products.length}</span>
+                    </div>
+                    <div style="background: #eff6ff; padding: 15px; border-radius: 8px; text-align: center;">
+                        <strong>Thamani ya Stock</strong><br>
+                        <span style="font-size: 24px; font-weight: bold; color: #1a73e8;">TZS ${totalValue.toLocaleString()}</span>
+                    </div>
+                    <div style="background: #fef3c7; padding: 15px; border-radius: 8px; text-align: center;">
+                        <strong>Gharama ya Stock</strong><br>
+                        <span style="font-size: 24px; font-weight: bold; color: #f59e0b;">TZS ${totalCost.toLocaleString()}</span>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 15px; border-radius: 8px; text-align: center; color: white;">
+                        <strong>💰 Faida Inayotarajiwa</strong><br>
+                        <span style="font-size: 24px; font-weight: bold;">TZS ${expectedProfit.toLocaleString()}</span>
+                    </div>
+                </div>
+                <p style="margin-top: 15px; text-align: center; color: #666;">Faida Halisi kutoka kwa Mauzo Yote: TZS ${totalSalesProfit.toLocaleString()}</p>
+            `;
         }
-
+        
+        // ============ USERS ============
         function loadUsers() {
             if (currentUser?.role !== 'admin') return;
             const container = document.getElementById('usersList');
             const otherUsers = users.filter(u => u.email !== 'malabamalaba26@gmail.com');
             if (otherUsers.length === 0) { container.innerHTML = '<p style="text-align: center; padding: 20px;">Hakuna wafanyakazi wengine. Ongeza mfanyakazi kwanza.</p>'; return; }
             let html = '<table><thead><tr><th>Jina Kamili</th><th>Barua pepe</th><th>Namba ya Simu</th><th>Nafasi</th><th>Kitendo</th></tr></thead><tbody>';
-            otherUsers.forEach(u => { html += `<tr>
-                <td><strong>${escapeHtml(u.name)}</strong></td>
-                <td>${escapeHtml(u.email)}</td>
-                <td>${u.phone || '-'}</td>
-                <td>${u.role === 'admin' ? '👑 Admin' : '👤 Cashier'}</td>
-                <td><button onclick="deleteUserByEmail('${escapeHtml(u.email)}')" class="btn-danger btn-sm">🗑️ Futa</button></td>
-            </tr>`; });
-            html += '</tbody></td>';
+            otherUsers.forEach(u => {
+                html += `<tr>
+                    <td><strong>${escapeHtml(u.name)}</strong></td>
+                    <td>${escapeHtml(u.email)}</td>
+                    <td>${u.phone || '-'}</td>
+                    <td>${u.role === 'admin' ? '👑 Admin' : '👤 Cashier'}</td>
+                    <td><button onclick="deleteUserByEmail('${escapeHtml(u.email)}')" class="btn-danger btn-sm">🗑️ Futa</button></td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
             container.innerHTML = html;
         }
-
-        function deleteUserByEmail(email) { if (confirm('Je, una uhakika unataka kufuta mfanyakazi huyu?')) { users = users.filter(u => u.email !== email); saveData(); loadUsers(); showSuccess('userSuccess', '✅ Mfanyakazi amefutwa kikamilifu!'); } }
-
-        function createUser() {
+        
+        async function deleteUserByEmail(email) {
+            if (confirm('Je, una uhakika unataka kufuta mfanyakazi huyu?')) {
+                await apiCall(`/api/users/${encodeURIComponent(email)}`, 'DELETE');
+                await loadAllData();
+                showSuccess('userSuccess', '✅ Mfanyakazi amefutwa kikamilifu!');
+            }
+        }
+        
+        async function createUser() {
             if (currentUser?.role !== 'admin') { alert('Admin pekee ndio anaweza kuongeza wafanyakazi!'); return; }
             const name = document.getElementById('userFullName').value.trim();
             const email = document.getElementById('userEmail').value.trim();
             const phone = document.getElementById('userPhone').value.trim();
             const role = document.getElementById('userRoleSelect').value;
             const password = document.getElementById('userPassword').value;
+            
             if (!name) { alert('❌ Tafadhali jaza jina la mfanyakazi'); return; }
             if (!email) { alert('❌ Tafadhali jaza barua pepe'); return; }
             if (!password) { alert('❌ Tafadhali jaza nenosiri'); return; }
             if (password.length < 4) { alert('❌ Nenosiri lazima iwe na herufi 4 au zaidi'); return; }
-            if (users.find(u => u.email === email)) { alert(`❌ Email "${email}" tayari ipo!`); return; }
-            users.push({ id: Date.now(), name, email, phone: phone || '', role, password });
-            saveData();
-            showSuccess('userSuccess', `✅ Mfanyakazi ${name} ameongezwa kikamilifu!`);
-            document.getElementById('userFullName').value = '';
-            document.getElementById('userEmail').value = '';
-            document.getElementById('userPhone').value = '';
-            document.getElementById('userPassword').value = '';
-            loadUsers();
+            
+            const result = await apiCall('/api/users', 'POST', { name, email, phone, role, password });
+            if (result.success) {
+                showSuccess('userSuccess', `✅ Mfanyakazi ${name} ameongezwa kikamilifu!`);
+                document.getElementById('userFullName').value = '';
+                document.getElementById('userEmail').value = '';
+                document.getElementById('userPhone').value = '';
+                document.getElementById('userPassword').value = '';
+                await loadAllData();
+            } else {
+                alert(result.message || 'Email tayari ipo');
+            }
         }
-
+        
+        // ============ UTILITIES ============
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function showSuccess(id, msg) {
+            const el = document.getElementById(id);
+            if (el) { el.innerHTML = msg; el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 3000); }
+        }
+        
         function showReceipt(sale) {
             const now = new Date();
             const itemsHtml = sale.items.map(i => `<tr>
-                <td><strong>${i.productName}</strong></td>
+                <td><strong>${escapeHtml(i.productName)}</strong></td>
                 <td style="text-align:center;">${i.quantity}</td>
-                <td style="text-align:right;">TZS ${i.price.toLocaleString()}</td>
-                <td style="text-align:right;">TZS ${i.total.toLocaleString()}</td>
+                <td style="text-align:right;">TZS ${(i.price || 0).toLocaleString()}</td>
+                <td style="text-align:right;">TZS ${(i.total || 0).toLocaleString()}</td>
             </tr>`).join('');
             document.getElementById('receiptContent').innerHTML = `<div style="text-align:center; font-family: monospace;">
                 <h2>🏪 SMART POS</h2>
@@ -761,13 +873,13 @@
                 <hr>
                 <p><strong>Invoice:</strong> ${sale.invoice}</p>
                 <p><strong>Tarehe:</strong> ${now.toLocaleDateString('sw-TZ')} ${now.toLocaleTimeString('sw-TZ')}</p>
-                <p><strong>Mteja:</strong> ${sale.customerName}</p>
+                <p><strong>Mteja:</strong> ${escapeHtml(sale.customerName)}</p>
                 ${sale.customerPhone ? `<p><strong>Simu:</strong> ${sale.customerPhone}</p>` : ''}
                 <hr>
                 <table style="width:100%; border-collapse: collapse;">
                     <thead><tr style="border-bottom:1px solid #000;"><th>Bidhaa</th><th>Idadi</th><th>Bei</th><th>Jumla</th></tr></thead>
                     <tbody>${itemsHtml}</tbody>
-                    <tfoot><tr style="border-top:1px solid #000;"><td colspan="3"><strong>JUMLA:</strong></td><td style="text-align:right;"><strong>TZS ${sale.total.toLocaleString()}</strong></td></tr></tfoot>
+                    <tfoot><tr style="border-top:1px solid #000;"><td colspan="3"><strong>JUMLA:</strong></td><td style="text-align:right;"><strong>TZS ${(sale.total || 0).toLocaleString()}</strong></td></tr></tfoot>
                 </table>
                 <hr>
                 <p><strong>Njia ya Malipo:</strong> ${sale.payment?.toUpperCase()}</p>
@@ -776,12 +888,11 @@
             </div>`;
             document.getElementById('receiptModal').style.display = 'flex';
         }
-
+        
         function closeReceipt() { document.getElementById('receiptModal').style.display = 'none'; }
         function printReceipt() { const w = window.open('', '_blank'); w.document.write('<html><head><title>RISITI - SMART POS</title><style>body{font-family:monospace;padding:20px}</style></head><body>' + document.getElementById('receiptContent').innerHTML + '</body></html>'); w.print(); }
-        function sendSMSReceipt() { const phone = document.getElementById('saleCustomerPhone').value; if (phone && phone.trim() !== '' && lastReceipt) alert(`📱 SMS imetumwa kwa ${phone}\n\nInvoice: ${lastReceipt.invoice}\nTotal: TZS ${lastReceipt.total.toLocaleString()}`); else if (!phone || phone.trim() === '') alert('⚠️ Tafadhali weka namba ya simu ya mteja!'); else alert('Hakuna taarifa za mauzo'); }
-        function showSuccess(id, msg) { const el = document.getElementById(id); el.innerHTML = msg; el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 3000); }
-
+        function sendSMSReceipt() { const phone = document.getElementById('saleCustomerPhone').value; if (phone && phone.trim() !== '' && lastReceipt) alert(`📱 SMS imetumwa kwa ${phone}\n\nInvoice: ${lastReceipt.invoice}\nTotal: TZS ${(lastReceipt.total || 0).toLocaleString()}`); else if (!phone || phone.trim() === '') alert('⚠️ Tafadhali weka namba ya simu ya mteja!'); else alert('Hakuna taarifa za mauzo'); }
+        
         function showTab(tab) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -790,19 +901,45 @@
             if (tab === 'stock') { checkLowStock(); loadStockSummary(); }
             if (tab === 'products') { displayProducts(); }
             if (tab === 'customers') { displayCustomers(); }
-            if (tab === 'categories') { loadCategories(); }
+            if (tab === 'categories') { loadCategoriesUI(); }
             if (tab === 'users' && currentUser?.role === 'admin') { loadUsers(); }
         }
-
-        if (checkSavedSession()) {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'block';
-            document.getElementById('userName').innerHTML = currentUser.name;
-            document.getElementById('userRole').innerHTML = currentUser.role === 'admin' ? '👑 Admin' : '👤 Cashier';
-            if (currentUser.role !== 'admin') { document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none'); }
-            else { document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block'); loadUsers(); }
-            loadDashboard(); loadCategories(); displayProducts(); displayCustomers(); checkLowStock(); loadStockSummary();
-        } else { document.getElementById('loginScreen').style.display = 'flex'; document.getElementById('dashboard').style.display = 'none'; }
+        
+        // ============ CHECK SAVED SESSION ============
+        async function checkSavedSession() {
+            const savedToken = localStorage.getItem('authToken');
+            const savedUser = localStorage.getItem('currentUser');
+            
+            if (savedToken && savedUser) {
+                authToken = savedToken;
+                currentUser = JSON.parse(savedUser);
+                
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                document.getElementById('userName').innerHTML = currentUser.name;
+                document.getElementById('userRole').innerHTML = currentUser.role === 'admin' ? '👑 Admin' : '👤 Cashier';
+                
+                if (currentUser.role !== 'admin') {
+                    document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+                } else {
+                    document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
+                }
+                
+                await loadAllData();
+                loadDashboard();
+                return true;
+            }
+            return false;
+        }
+        
+        // ============ INITIALIZE ============
+        (async function init() {
+            const hasSession = await checkSavedSession();
+            if (!hasSession) {
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('dashboard').style.display = 'none';
+            }
+        })();
     </script>
 </body>
 </html>

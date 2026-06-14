@@ -98,7 +98,6 @@
             display: none;
         }
         
-        /* DASHBOARD STYLES */
         .dashboard { display: none; }
         .navbar { background: white; padding: 15px 25px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .navbar h3 { color: #1a73e8; }
@@ -180,15 +179,15 @@
             .products-grid { grid-template-columns: 1fr; }
             .login-card { padding: 30px 20px; }
         }
-</style>
+    </style>
 </head>
 <body>
     <div id="loginScreen" class="login-screen">
         <div class="login-card">
             <h2>🏪 SMART POS</h2>
             <h4>Shinyanga, Tanzania</h4>
-            <input type="email" id="email" placeholder="Barua pepe">
-            <input type="password" id="password" placeholder="Nenosiri">
+            <input type="email" id="email" placeholder="Barua pepe" value="malabamalaba26@gmail.com">
+            <input type="password" id="password" placeholder="Nenosiri" value="Malaba@03">
             <button onclick="login()">INGIA MFUMO</button>
             <div id="loginError" class="error"></div>
         </div>
@@ -640,7 +639,7 @@
                 return;
             }
             
-            let html = `<table><thead><tr><th>Jina Kamili</th><th>Namba ya Simu</th><th>Barua pepe</th><th>Anwani</th><th>Kitendo</th></tr></thead><tbody>`;
+            let html = `<tr><thead><tr><th>Jina Kamili</th><th>Namba ya Simu</th><th>Barua pepe</th><th>Anwani</th><th>Kitendo</th></tr></thead><tbody>`;
             customers.forEach(c => {
                 html += `<tr>
                     <td><strong>${escapeHtml(c.name)}</strong></td>
@@ -650,7 +649,7 @@
                     <td><button onclick="deleteCustomer(${c.id})" class="btn-danger btn-sm">🗑️ Futa</button></td>
                 </tr>`;
             });
-            html += `</tbody></td>`;
+            html += `</tbody></table>`;
             container.innerHTML = html;
             
             const saleSelect = document.getElementById('saleCustomerSelect');
@@ -786,7 +785,7 @@
             document.getElementById('lowStockCount').innerText = low.length;
             const div = document.getElementById('lowStockList');
             if (low.length === 0) { div.innerHTML = '<p>✅ Hakuna bidhaa zinazoisha. Stock zote ni nzuri.</p>'; return; }
-            let html = '<table><thead><tr><th>Bidhaa</th><th>Stock</th><th>Alert Level</th><th>Action</th></tr></thead><tbody>';
+            let html = '<td><thead><tr><th>Bidhaa</th><th>Stock</th><th>Alert Level</th><th>Action</th></tr></thead><tbody>';
             low.forEach(p => {
                 html += `<tr>
                     <td><strong>${escapeHtml(p.name)}</strong></td>
@@ -795,7 +794,7 @@
                     <td><button onclick="quickAddStock(${p.id})" class="btn-warning btn-sm">➕ Ongeza Stock</button></td>
                 </tr>`;
             });
-            html += '</tbody></table>';
+            html += '</tbody></tr>';
             div.innerHTML = html;
         }
         
